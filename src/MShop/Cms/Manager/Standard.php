@@ -32,7 +32,7 @@ class Standard
 	 */
 	public function create( array $values = [] ) : \Aimeos\MShop\Common\Item\Iface
 	{
-		$values['cms.siteid'] = $values['cms.siteid'] ?? $this->context()->locale()->getSiteId();
+		$values['cms.siteid'] ??= $this->context()->locale()->getSiteId();
 		return new \Aimeos\MShop\Cms\Item\Standard( 'cms.', $values );
 	}
 
@@ -128,7 +128,7 @@ class Standard
 				'label' => 'Cms has list item, parameter(<domain>[,<list type>[,<reference ID>)]]',
 				'type' => 'null',
 				'public' => false,
-				'function' => function( &$source, array $params ) use ( $level ) {
+				'function' => function( &$source, array $params ) use ( $level ): array {
 					$keys = [];
 
 					foreach( (array) ( $params[1] ?? '' ) as $type ) {

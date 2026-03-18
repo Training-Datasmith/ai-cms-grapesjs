@@ -85,9 +85,7 @@ class Standard
 
 		$item = $this->view()->item;
 
-		$listItems = $item->getListItems( 'text', null, null, false )->filter( function( $item ) {
-			return $item->getRefItem() === null || $item->getRefItem()->getType() !== 'content';
-		} );
+		$listItems = $item->getListItems( 'text', null, null, false )->filter( fn($item) => $item->getRefItem() === null || $item->getRefItem()->getType() !== 'content' );
 
 		$item->deleteListItems( $listItems, true );
 
@@ -293,9 +291,7 @@ class Standard
 		$textManager = \Aimeos\MShop::create( $context, 'text' );
 		$manager = \Aimeos\MShop::create( $context, 'cms' );
 
-		$listItems = $item->getListItems( 'text', null, null, false )->filter( function( $item ) {
-			return $item->getRefItem() === null || $item->getRefItem()->getType() !== 'content';
-		} );
+		$listItems = $item->getListItems( 'text', null, null, false )->filter( fn($item) => $item->getRefItem() === null || $item->getRefItem()->getType() !== 'content' );
 
 
 		foreach( $data as $idx => $entry )
@@ -345,17 +341,17 @@ class Standard
 		$data = [];
 		$siteId = $this->context()->locale()->getSiteId();
 
-		$listItems = $item->getListItems( 'text', null, null, false )->filter( function( $item ) {
-			return $item->getRefItem() === null || $item->getRefItem()->getType() !== 'content';
-		} );
+		$listItems = $item->getListItems( 'text', null, null, false )->filter( fn($item) => $item->getRefItem() === null || $item->getRefItem()->getType() !== 'content' );
 
 		foreach( $listItems as $listItem )
 		{
-			if( ( $refItem = $listItem->getRefItem() ) === null || $refItem->getType() === 'content' ) {
-				continue;
-			}
-
-			$list = $listItem->toArray( true ) + $refItem->toArray( true );
+			if (( $refItem = $listItem->getRefItem() ) === null) {
+                continue;
+            }
+            if ($refItem->getType() === 'content') {
+                continue;
+            }
+            $list = $listItem->toArray( true ) + $refItem->toArray( true );
 
 			if( $copy === true )
 			{

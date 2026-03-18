@@ -138,7 +138,7 @@ class Standard
 			return $this->object()->modify( $html, $uid );
 		}
 
-		$view = $this->view = $this->view ?? $this->object()->data( $this->view(), $this->tags, $this->expire );
+		$view = ($this->view ??= $this->object()->data( $this->view(), $this->tags, $this->expire ));
 
 		if( !isset( $view->pageCmsItem ) ) {
 			return '';
@@ -174,7 +174,7 @@ class Standard
 			return $this->object()->modify( $html, $uid );
 		}
 
-		$view = $this->view = $this->view ?? $this->object()->data( $this->view(), $this->tags, $this->expire );
+		$view = ($this->view ??= $this->object()->data( $this->view(), $this->tags, $this->expire ));
 
 		if( !isset( $view->pageCmsItem ) ) {
 			return '';
@@ -313,7 +313,7 @@ class Standard
 			$this->addMetaItems( $page, $expire, $tags );
 
 			$view->pageCmsItem = $page;
-			$view->pageContent = $page->getRefItems( 'text', 'content' )->map( function( $item ) {
+			$view->pageContent = $page->getRefItems( 'text', 'content' )->map( function( $item ): string {
 				$data = ( $json = json_decode( $item->getContent(), true ) ) ? $json['html'] : $item->getContent();
 				return '<div class="cms-content">' . $data . '</div>';
 			} )->all();
