@@ -1,191 +1,180 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  */
 
-
 namespace Aimeos\Admin\JQAdm\Cms\Content;
-
 
 class StandardTest extends \PHPUnit\Framework\TestCase
 {
-	private $context;
-	private $object;
-	private $view;
+    private $context;
+    private $object;
+    private $view;
 
+    protected function setUp(): void
+    {
+        $this->view = \TestHelper::view();
+        $this->context = \TestHelper::context();
 
-	protected function setUp() : void
-	{
-		$this->view = \TestHelper::view();
-		$this->context = \TestHelper::context();
+        $langManager = \Aimeos\MShop::create($this->context, 'locale/language');
 
-		$langManager = \Aimeos\MShop::create( $this->context, 'locale/language' );
+        $this->view->pageLanguages = $langManager->search($langManager->filter());
+        $this->view->item = \Aimeos\MShop::create($this->context, 'cms')->create();
 
-		$this->view->pageLanguages = $langManager->search( $langManager->filter() );
-		$this->view->item = \Aimeos\MShop::create( $this->context, 'cms' )->create();
+        $this->object = new \Aimeos\Admin\JQAdm\Cms\Content\Standard($this->context);
+        $this->object = new \Aimeos\Admin\JQAdm\Common\Decorator\Page($this->object, $this->context);
+        $this->object->setAimeos(\TestHelper::getAimeos());
+        $this->object->setView($this->view);
+    }
 
-		$this->object = new \Aimeos\Admin\JQAdm\Cms\Content\Standard( $this->context );
-		$this->object = new \Aimeos\Admin\JQAdm\Common\Decorator\Page( $this->object, $this->context );
-		$this->object->setAimeos( \TestHelper::getAimeos() );
-		$this->object->setView( $this->view );
-	}
+    protected function tearDown(): void
+    {
+        unset($this->object, $this->view, $this->context);
+    }
 
+    public function testCreate()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
-	protected function tearDown() : void
-	{
-		unset( $this->object, $this->view, $this->context );
-	}
+        $this->view->item = $manager->create();
+        $result = $this->object->create();
 
+        $this->assertStringContainsString('item-content', $result);
+        $this->assertEmpty($this->view->get('errors'));
+    }
 
-	public function testCreate()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+    public function testCopy()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
-		$this->view->item = $manager->create();
-		$result = $this->object->create();
+        $this->view->item = $manager->find('/contact', ['text']);
+        $result = $this->object->copy();
 
-		$this->assertStringContainsString( 'item-content', $result );
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-	}
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertStringContainsString('Hello', $result);
+    }
 
+    public function testDelete()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
-	public function testCopy()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+        $this->view->item = $manager->create();
+        $result = $this->object->delete();
 
-		$this->view->item = $manager->find( '/contact', ['text'] );
-		$result = $this->object->copy();
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertEmpty($result);
+    }
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertStringContainsString( 'Hello', $result );
-	}
+    public function testGet()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
+        $this->view->item = $manager->find('/contact', ['text']);
+        $result = $this->object->get();
 
-	public function testDelete()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertStringContainsString('Hello', $result);
+    }
 
-		$this->view->item = $manager->create();
-		$result = $this->object->delete();
+    public function testSave()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
+        $item = $manager->create();
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertEmpty( $result );
-	}
+        $param = [
+            'site' => 'unittest',
+            'content' => [
+                [
+                    'text.id' => '',
+                    'text.languageid' => 'en',
+                    'text.content' => '<h1>Hello!</h1>',
+                    'cms.lists.type' => 'default',
+                    'cms.lists.position' => 0,
+                ],
+                [
+                    'text.id' => '',
+                    'text.languageid' => 'de',
+                    'text.content' => '<h1>Hallo!</h1>',
+                    'cms.lists.type' => 'default',
+                    'cms.lists.position' => 1,
+                ],
+            ],
+        ];
 
+        $helper = new \Aimeos\Base\View\Helper\Param\Standard($this->view, $param);
+        $this->view->addHelper('param', $helper);
+        $this->view->item = $item;
 
-	public function testGet()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+        $result = $this->object->save();
+        $listItems = $item->getListItems();
 
-		$this->view->item = $manager->find( '/contact', ['text'] );
-		$result = $this->object->get();
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertEmpty($result);
+        $this->assertEquals(2, count($listItems));
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertStringContainsString( 'Hello', $result );
-	}
+        $this->assertEquals([0, 1], $listItems->getPosition()->values()->toArray());
+        $this->assertEquals(['text', 'text'], $listItems->getDomain()->values()->toArray());
 
+        $refItems = $listItems->getRefItem();
 
-	public function testSave()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
-		$item = $manager->create();
+        $this->assertEquals(['en', 'de'], $refItems->getLanguageId()->values()->toArray());
+        $this->assertEquals(['<h1>Hello!</h1>', '<h1>Hallo!</h1>'], $refItems->getContent()->values()->toArray());
+    }
 
-		$param = array(
-			'site' => 'unittest',
-			'content' => array(
-				array(
-					'text.id' => '',
-					'text.languageid' => 'en',
-					'text.content' => '<h1>Hello!</h1>',
-					'cms.lists.type' => 'default',
-					'cms.lists.position' => 0,
-				),
-				array(
-					'text.id' => '',
-					'text.languageid' => 'de',
-					'text.content' => '<h1>Hallo!</h1>',
-					'cms.lists.type' => 'default',
-					'cms.lists.position' => 1,
-				),
-			),
-		);
+    public function testSaveException()
+    {
+        $templates = \TestHelper::getAimeos()->getTemplatePaths('admin/jqadm/templates');
 
-		$helper = new \Aimeos\Base\View\Helper\Param\Standard( $this->view, $param );
-		$this->view->addHelper( 'param', $helper );
-		$this->view->item = $item;
+        $object = $this->getMockBuilder(\Aimeos\Admin\JQAdm\Cms\Content\Standard::class)
+            ->setConstructorArgs([ $this->context, $templates ])
+            ->onlyMethods([ 'fromArray' ])
+            ->getMock();
 
-		$result = $this->object->save();
-		$listItems = $item->getListItems();
+        $object->expects($this->once())->method('fromArray')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertEmpty( $result );
-		$this->assertEquals( 2, count( $listItems ) );
+        $this->view = \TestHelper::view();
+        $this->view->item = \Aimeos\MShop::create($this->context, 'cms')->create();
 
-		$this->assertEquals( [0, 1], $listItems->getPosition()->values()->toArray() );
-		$this->assertEquals( ['text', 'text'], $listItems->getDomain()->values()->toArray() );
+        $object->setView($this->view);
 
-		$refItems = $listItems->getRefItem();
+        $this->expectException(\RuntimeException::class);
+        $object->save();
+    }
 
-		$this->assertEquals( ['en', 'de'], $refItems->getLanguageId()->values()->toArray() );
-		$this->assertEquals( ['<h1>Hello!</h1>', '<h1>Hallo!</h1>'], $refItems->getContent()->values()->toArray() );
-	}
+    public function testSaveMShopException()
+    {
+        $templates = \TestHelper::getAimeos()->getTemplatePaths('admin/jqadm/templates');
 
+        $object = $this->getMockBuilder(\Aimeos\Admin\JQAdm\Cms\Content\Standard::class)
+            ->setConstructorArgs([ $this->context, $templates ])
+            ->onlyMethods([ 'fromArray' ])
+            ->getMock();
 
-	public function testSaveException()
-	{
-		$templates = \TestHelper::getAimeos()->getTemplatePaths( 'admin/jqadm/templates' );
+        $object->expects($this->once())->method('fromArray')
+            ->will($this->throwException(new \Aimeos\MShop\Exception()));
 
-		$object = $this->getMockBuilder( \Aimeos\Admin\JQAdm\Cms\Content\Standard::class )
-			->setConstructorArgs( array( $this->context, $templates ) )
-			->onlyMethods( array( 'fromArray' ) )
-			->getMock();
+        $this->view = \TestHelper::view();
+        $this->view->item = \Aimeos\MShop::create($this->context, 'cms')->create();
 
-		$object->expects( $this->once() )->method( 'fromArray' )
-			->will( $this->throwException( new \RuntimeException() ) );
+        $object->setView($this->view);
 
-		$this->view = \TestHelper::view();
-		$this->view->item = \Aimeos\MShop::create( $this->context, 'cms' )->create();
+        $this->expectException(\Aimeos\MShop\Exception::class);
+        $object->save();
+    }
 
-		$object->setView( $this->view );
+    public function testSearch()
+    {
+        $this->assertEmpty($this->object->search());
+    }
 
-		$this->expectException( \RuntimeException::class );
-		$object->save();
-	}
-
-
-	public function testSaveMShopException()
-	{
-		$templates = \TestHelper::getAimeos()->getTemplatePaths( 'admin/jqadm/templates' );
-
-		$object = $this->getMockBuilder( \Aimeos\Admin\JQAdm\Cms\Content\Standard::class )
-			->setConstructorArgs( array( $this->context, $templates ) )
-			->onlyMethods( array( 'fromArray' ) )
-			->getMock();
-
-		$object->expects( $this->once() )->method( 'fromArray' )
-			->will( $this->throwException( new \Aimeos\MShop\Exception() ) );
-
-		$this->view = \TestHelper::view();
-		$this->view->item = \Aimeos\MShop::create( $this->context, 'cms' )->create();
-
-		$object->setView( $this->view );
-
-		$this->expectException( \Aimeos\MShop\Exception::class );
-		$object->save();
-	}
-
-
-	public function testSearch()
-	{
-		$this->assertEmpty( $this->object->search() );
-	}
-
-
-	public function testGetSubClient()
-	{
-		$this->expectException( \LogicException::class );
-		$this->object->getSubClient( 'unknown' );
-	}
+    public function testGetSubClient()
+    {
+        $this->expectException(\LogicException::class);
+        $this->object->getSubClient('unknown');
+    }
 }

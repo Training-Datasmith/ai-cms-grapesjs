@@ -1,94 +1,87 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  */
 
-
 namespace Aimeos\Client\Html\Cms\Page;
-
 
 class StandardTest extends \PHPUnit\Framework\TestCase
 {
-	private $object;
-	private $context;
-	private $view;
+    private $object;
+    private $context;
+    private $view;
 
+    protected function setUp(): void
+    {
+        $this->context = \TestHelper::context();
+        $this->context->locale()->setLanguageId('en');
+        $this->view = $this->context->view();
 
-	protected function setUp() : void
-	{
-		$this->context = \TestHelper::context();
-		$this->context->locale()->setLanguageId( 'en' );
-		$this->view = $this->context->view();
+        $this->object = new \Aimeos\Client\Html\Cms\Page\Standard($this->context);
+        $this->object->setView($this->context->view());
+    }
 
-		$this->object = new \Aimeos\Client\Html\Cms\Page\Standard( $this->context );
-		$this->object->setView( $this->context->view() );
-	}
+    protected function tearDown(): void
+    {
+        unset($this->object, $this->context, $this->view);
+    }
 
+    public function testHeader()
+    {
+        $tags = [];
+        $expire = null;
+        $view = $this->view;
 
-	protected function tearDown() : void
-	{
-		unset( $this->object, $this->context, $this->view );
-	}
+        $helper = new \Aimeos\Base\View\Helper\Param\Standard($view, ['path' => 'contact']);
+        $view->addHelper('param', $helper);
 
+        $this->object->setView($this->object->data($view, $tags, $expire));
+        $output = $this->object->header();
 
-	public function testHeader()
-	{
-		$tags = [];
-		$expire = null;
-		$view = $this->view;
+        $this->assertStringContainsString('<title>Contact page | Aimeos</title>', $output);
+        $this->assertEquals(null, $expire);
+        $this->assertEquals(1, count($tags));
+    }
 
-		$helper = new \Aimeos\Base\View\Helper\Param\Standard( $view, ['path' => 'contact'] );
-		$view->addHelper( 'param', $helper );
+    public function testBody()
+    {
+        $tags = [];
+        $expire = null;
+        $view = $this->view;
 
-		$this->object->setView( $this->object->data( $view, $tags, $expire ) );
-		$output = $this->object->header();
+        $helper = new \Aimeos\Base\View\Helper\Param\Standard($view, ['path' => 'contact']);
+        $view->addHelper('param', $helper);
 
-		$this->assertStringContainsString( '<title>Contact page | Aimeos</title>', $output );
-		$this->assertEquals( null, $expire );
-		$this->assertEquals( 1, count( $tags ) );
-	}
+        $this->object->setView($this->object->data($view, $tags, $expire));
+        $output = $this->object->body();
 
+        $this->assertStringStartsWith('<section class="aimeos cms-page', $output);
+        $this->assertStringContainsString('<h1>Hello!</h1>', $output);
 
-	public function testBody()
-	{
-		$tags = [];
-		$expire = null;
-		$view = $this->view;
+        $this->assertEquals(null, $expire);
+        $this->assertEquals(1, count($tags));
+    }
 
-		$helper = new \Aimeos\Base\View\Helper\Param\Standard( $view, ['path' => 'contact'] );
-		$view->addHelper( 'param', $helper );
+    public function testGetSubClientInvalid()
+    {
+        $this->expectException(\LogicException::class);
+        $this->object->getSubClient('unknown', 'unknown');
+    }
 
-		$this->object->setView( $this->object->data( $view, $tags, $expire ) );
-		$output = $this->object->body();
+    public function testGetSubClientInvalidName()
+    {
+        $this->expectException(\LogicException::class);
+        $this->object->getSubClient('$$$', '$$$');
+    }
 
-		$this->assertStringStartsWith( '<section class="aimeos cms-page', $output );
-		$this->assertStringContainsString( '<h1>Hello!</h1>', $output );
+    public function testInit()
+    {
+        $this->object->init();
 
-		$this->assertEquals( null, $expire );
-		$this->assertEquals( 1, count( $tags ) );
-	}
-
-
-	public function testGetSubClientInvalid()
-	{
-		$this->expectException( \LogicException::class );
-		$this->object->getSubClient( 'unknown', 'unknown' );
-	}
-
-
-	public function testGetSubClientInvalidName()
-	{
-		$this->expectException( \LogicException::class );
-		$this->object->getSubClient( '$$$', '$$$' );
-	}
-
-
-	public function testInit()
-	{
-		$this->object->init();
-
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-	}
+        $this->assertEmpty($this->view->get('errors'));
+    }
 }

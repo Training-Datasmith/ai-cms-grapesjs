@@ -5,7 +5,6 @@
  * @copyright Aimeos (aimeos.org), 2021-2026
  */
 
-
 /** client/html/cms/page/basket-add
  * Display the "add to basket" button for each product item
  *
@@ -30,19 +29,18 @@
 
 $enc = $this->encoder();
 
-
 ?>
 <div class="catalog-list swiffy-slider slider-nav-outside">
 	<div class="catalog-list-items product-list slider-container">
 
 		<?= $this->partial(
-			$this->config( 'client/html/common/partials/products', 'common/partials/products' ),
-			array(
-				'require-stock' => (int) $this->config( 'client/html/basket/require-stock', true ),
-				'basket-add' => $this->config( 'client/html/cms/page/basket-add', false ),
-				'attributeTypes' => $this->get( 'attributeTypes', map() ),
-				'products' => $this->get( 'products', map() ),
-			)
+		    $this->config('client/html/common/partials/products', 'common/partials/products'),
+		    [
+		        'require-stock' => (int) $this->config('client/html/basket/require-stock', true),
+		        'basket-add' => $this->config('client/html/cms/page/basket-add', false),
+		        'attributeTypes' => $this->get('attributeTypes', map()),
+		        'products' => $this->get('products', map()),
+		    ]
 		) ?>
 
 	</div>
@@ -50,9 +48,9 @@ $enc = $this->encoder();
 	<button type="button" class="slider-nav" aria-label="Go to previous"></button>
 	<button type="button" class="slider-nav slider-nav-next" aria-label="Go to next"></button>
 
-	<?php if( isset( $this->itemsStockUrl ) ) : ?>
-		<?php foreach( $this->itemsStockUrl as $url ) : ?>
-			<script class="items-stock" defer src="<?= $enc->attr( $url ) ?>"></script>
+	<?php if (isset($this->itemsStockUrl)) : ?>
+		<?php foreach ($this->itemsStockUrl as $url) : ?>
+			<script class="items-stock" defer src="<?= $enc->attr($url) ?>"></script>
 		<?php endforeach ?>
 	<?php endif ?>
 

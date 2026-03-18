@@ -9,16 +9,14 @@
  * - pageCmsItem : Cms page item incl. referenced items
  */
 
-
 $enc = $this->encoder();
-$entries = $this->get( 'pageContent', [] );
-
+$entries = $this->get('pageContent', []);
 
 ?>
-<?php if( !empty( $entries ) ) : ?>
-	<section class="aimeos cms-page container-fluid" data-jsonurl="<?= $enc->attr( $this->link( 'client/jsonapi/url' ) ); ?>">
+<?php if (!empty($entries)) : ?>
+	<section class="aimeos cms-page container-fluid" data-jsonurl="<?= $enc->attr($this->link('client/jsonapi/url')); ?>">
 
-		<?php foreach( $entries as $content ) : ?>
+		<?php foreach ($entries as $content) : ?>
 			<?= $content ?>
 		<?php endforeach ?>
 

@@ -1,206 +1,188 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  */
 
-
 namespace Aimeos\Admin\JQAdm\Cms\Media;
-
 
 class StandardTest extends \PHPUnit\Framework\TestCase
 {
-	private $context;
-	private $object;
-	private $view;
+    private $context;
+    private $object;
+    private $view;
 
+    protected function setUp(): void
+    {
+        $this->view = \TestHelper::view();
+        $this->context = \TestHelper::context();
 
-	protected function setUp() : void
-	{
-		$this->view = \TestHelper::view();
-		$this->context = \TestHelper::context();
+        $this->object = new \Aimeos\Admin\JQAdm\Cms\Media\Standard($this->context);
+        $this->object = new \Aimeos\Admin\JQAdm\Common\Decorator\Page($this->object, $this->context);
+        $this->object->setAimeos(\TestHelper::getAimeos());
+        $this->object->setView($this->view);
+    }
 
-		$this->object = new \Aimeos\Admin\JQAdm\Cms\Media\Standard( $this->context );
-		$this->object = new \Aimeos\Admin\JQAdm\Common\Decorator\Page( $this->object, $this->context );
-		$this->object->setAimeos( \TestHelper::getAimeos() );
-		$this->object->setView( $this->view );
-	}
+    protected function tearDown(): void
+    {
+        unset($this->object, $this->view, $this->context);
+    }
 
+    public function testCreate()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
-	protected function tearDown() : void
-	{
-		unset( $this->object, $this->view, $this->context );
-	}
+        $this->view->item = $manager->create();
+        $result = $this->object->create();
 
+        $this->assertStringContainsString('item-media', $result);
+        $this->assertEmpty($this->view->get('errors'));
+    }
 
-	public function testCreate()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+    public function testCopy()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
-		$this->view->item = $manager->create();
-		$result = $this->object->create();
+        $this->view->item = $manager->find('/kontakt', ['media']);
+        $result = $this->object->copy();
 
-		$this->assertStringContainsString( 'item-media', $result );
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-	}
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertStringContainsString('&quot;media.preview&quot;:&quot;\/path\/to\/image-small-2.jpg', $result);
+    }
 
+    public function testDelete()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
-	public function testCopy()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+        $this->view->item = $manager->create();
+        $result = $this->object->delete();
 
-		$this->view->item = $manager->find( '/kontakt', ['media'] );
-		$result = $this->object->copy();
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertEmpty($result);
+    }
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertStringContainsString( '&quot;media.preview&quot;:&quot;\/path\/to\/image-small-2.jpg', $result );
-	}
+    public function testGet()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
 
+        $this->view->item = $manager->find('/kontakt', ['media']);
+        $result = $this->object->get();
 
-	public function testDelete()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertStringContainsString('&quot;media.preview&quot;:&quot;\/path\/to\/image-small-2.jpg', $result);
+    }
 
-		$this->view->item = $manager->create();
-		$result = $this->object->delete();
+    public function testSave()
+    {
+        $manager = \Aimeos\MShop::create($this->context, 'cms');
+        $this->view->item = $manager->create();
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertEmpty( $result );
-	}
+        $param = [
+            'site' => 'unittest',
+            'media' => [[
+                'media.id' => '',
+                'media.type' => 'default',
+                'media.languageid' => 'de',
+                'media.label' => 'test',
+                'cms.lists.type' => 'default',
+            ]],
+        ];
 
+        $helper = new \Aimeos\Base\View\Helper\Param\Standard($this->view, $param);
+        $this->view->addHelper('param', $helper);
 
-	public function testGet()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
+        $file = $this->getMockBuilder(\Psr\Http\Message\UploadedFileInterface::class)->getMock();
+        $request = $this->getMockBuilder(\Psr\Http\Message\ServerRequestInterface::class)->getMock();
+        $request->expects($this->any())->method('getUploadedFiles')
+            ->willReturn(['media' => [0 => ['file' => $file]]]);
 
-		$this->view->item = $manager->find( '/kontakt', ['media'] );
-		$result = $this->object->get();
+        $helper = new \Aimeos\Base\View\Helper\Request\Standard($this->view, $request, '127.0.0.1', 'test');
+        $this->view ->addHelper('request', $helper);
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertStringContainsString( '&quot;media.preview&quot;:&quot;\/path\/to\/image-small-2.jpg', $result );
-	}
+        $managerStub = $this->getMockBuilder(\Aimeos\MShop\Media\Manager\Standard::class)
+            ->setConstructorArgs([ $this->context ])
+            ->onlyMethods(['upload'])
+            ->getMock();
 
+        \Aimeos\MShop::inject(\Aimeos\MShop\Media\Manager\Standard::class, $managerStub);
 
-	public function testSave()
-	{
-		$manager = \Aimeos\MShop::create( $this->context, 'cms' );
-		$this->view->item = $manager->create();
+        $managerStub->expects($this->once())->method('upload')->willReturnArgument(0);
 
+        $result = $this->object->save();
 
-		$param = array(
-			'site' => 'unittest',
-			'media' => [[
-				'media.id' => '',
-				'media.type' => 'default',
-				'media.languageid' => 'de',
-				'media.label' => 'test',
-				'cms.lists.type' => 'default',
-			]],
-		);
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertEmpty($result);
+        $this->assertEquals(1, count($this->view->item->getListItems()));
 
-		$helper = new \Aimeos\Base\View\Helper\Param\Standard( $this->view, $param );
-		$this->view->addHelper( 'param', $helper );
+        foreach ($this->view->item->getListItems('media') as $listItem) {
+            $this->assertEquals('media', $listItem->getDomain());
 
-		$file = $this->getMockBuilder( \Psr\Http\Message\UploadedFileInterface::class )->getMock();
-		$request = $this->getMockBuilder( \Psr\Http\Message\ServerRequestInterface::class )->getMock();
-		$request->expects( $this->any() )->method( 'getUploadedFiles' )
-			->willReturn( ['media' => [0 => ['file' => $file]]] );
+            $refItem = $listItem->getRefItem();
+            $this->assertEquals('de', $refItem->getLanguageId());
+            $this->assertEquals('test', $refItem->getLabel());
+        }
 
-		$helper = new \Aimeos\Base\View\Helper\Request\Standard( $this->view, $request, '127.0.0.1', 'test' );
-		$this->view ->addHelper( 'request', $helper );
+        $helper = new \Aimeos\Base\View\Helper\Param\Standard($this->view, ['site' => 'unittest', 'media' => []]);
+        $this->view->addHelper('param', $helper);
 
+        $result = $this->object->save();
 
-		$managerStub = $this->getMockBuilder( \Aimeos\MShop\Media\Manager\Standard::class )
-			->setConstructorArgs( array( $this->context ) )
-			->onlyMethods( ['upload'] )
-			->getMock();
+        $this->assertEmpty($this->view->get('errors'));
+        $this->assertEmpty($result);
+        $this->assertEquals(0, count($this->view->item->getListItems()));
+    }
 
-		\Aimeos\MShop::inject( \Aimeos\MShop\Media\Manager\Standard::class, $managerStub );
+    public function testSaveException()
+    {
+        $object = $this->getClientMock('fromArray');
 
-		$managerStub->expects( $this->once() )->method( 'upload' )->willReturnArgument( 0 );
+        $object->expects($this->once())->method('fromArray')
+            ->will($this->throwException(new \RuntimeException()));
 
+        $this->expectException(\RuntimeException::class);
+        $object->save();
+    }
 
-		$result = $this->object->save();
+    public function testSaveMShopException()
+    {
+        $object = $this->getClientMock('fromArray');
 
+        $object->expects($this->once())->method('fromArray')
+            ->will($this->throwException(new \Aimeos\MShop\Exception()));
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertEmpty( $result );
-		$this->assertEquals( 1, count( $this->view->item->getListItems() ) );
+        $this->expectException(\Aimeos\MShop\Exception::class);
+        $object->save();
+    }
 
-		foreach( $this->view->item->getListItems( 'media' ) as $listItem )
-		{
-			$this->assertEquals( 'media', $listItem->getDomain() );
+    public function testSearch()
+    {
+        $this->assertEmpty($this->object->search());
+    }
 
-			$refItem = $listItem->getRefItem();
-			$this->assertEquals( 'de', $refItem->getLanguageId() );
-			$this->assertEquals( 'test', $refItem->getLabel() );
-		}
+    public function testGetSubClient()
+    {
+        $this->expectException(\LogicException::class);
+        $this->object->getSubClient('unknown');
+    }
 
+    public function getClientMock($method)
+    {
+        $templates = \TestHelper::getAimeos()->getTemplatePaths('admin/jqadm/templates');
 
-		$helper = new \Aimeos\Base\View\Helper\Param\Standard( $this->view, ['site' => 'unittest', 'media' => []] );
-		$this->view->addHelper( 'param', $helper );
+        $object = $this->getMockBuilder(\Aimeos\Admin\JQAdm\Cms\Media\Standard::class)
+            ->setConstructorArgs([ $this->context, $templates ])
+            ->onlyMethods([$method])
+            ->getMock();
 
-		$result = $this->object->save();
+        $view = \TestHelper::view();
+        $view->item = \Aimeos\MShop::create($this->context, 'cms')->create();
 
-		$this->assertEmpty( $this->view->get( 'errors' ) );
-		$this->assertEmpty( $result );
-		$this->assertEquals( 0, count( $this->view->item->getListItems() ) );
-	}
+        $object->setAimeos(\TestHelper::getAimeos());
+        $object->setView($view);
 
-
-	public function testSaveException()
-	{
-		$object = $this->getClientMock( 'fromArray' );
-
-		$object->expects( $this->once() )->method( 'fromArray' )
-			->will( $this->throwException( new \RuntimeException() ) );
-
-		$this->expectException( \RuntimeException::class );
-		$object->save();
-	}
-
-
-	public function testSaveMShopException()
-	{
-		$object = $this->getClientMock( 'fromArray' );
-
-		$object->expects( $this->once() )->method( 'fromArray' )
-			->will( $this->throwException( new \Aimeos\MShop\Exception() ) );
-
-		$this->expectException( \Aimeos\MShop\Exception::class );
-		$object->save();
-	}
-
-
-	public function testSearch()
-	{
-		$this->assertEmpty( $this->object->search() );
-	}
-
-
-	public function testGetSubClient()
-	{
-		$this->expectException( \LogicException::class );
-		$this->object->getSubClient( 'unknown' );
-	}
-
-
-	public function getClientMock( $method )
-	{
-		$templates = \TestHelper::getAimeos()->getTemplatePaths( 'admin/jqadm/templates' );
-
-		$object = $this->getMockBuilder( \Aimeos\Admin\JQAdm\Cms\Media\Standard::class )
-			->setConstructorArgs( array( $this->context, $templates ) )
-			->onlyMethods( [$method] )
-			->getMock();
-
-		$view = \TestHelper::view();
-		$view->item = \Aimeos\MShop::create( $this->context, 'cms' )->create();
-
-		$object->setAimeos( \TestHelper::getAimeos() );
-		$object->setView( $view );
-
-		return $object;
-	}
+        return $object;
+    }
 }
