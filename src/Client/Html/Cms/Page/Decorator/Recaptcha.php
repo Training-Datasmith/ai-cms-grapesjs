@@ -34,13 +34,17 @@ class Recaptcha extends \Aimeos\Client\Html\Common\Decorator\Base implements \Ai
             }
 
             $ip = $view->request()->getClientAddress();
-            $url = 'https://www.google.com/recaptcha/api/siteverify?secret=' . $key . '&response=' . $token . '&remoteip=' . $ip;
+            $url = 'https://www.google.com/recaptcha/api/siteverify?' . http_build_query([
+                'secret' => $key,
+                'response' => $token,
+                'remoteip' => $ip,
+            ]);
 
             if (($result = file_get_contents($url)) === false || ($data = json_decode($result)) === null) {
                 throw new \Aimeos\Client\Html\Exception($context->translate('client', 'Invalid reCAPTCHA response'));
             }
 
-            if ($data->success != true || $data->score < 0.5) {
+            if ($data->success !== true || $data->score < 0.5) {
                 throw new \Aimeos\Client\Html\Exception($context->translate('client', 'Your request is likely spam and was not executed'));
             }
         }
