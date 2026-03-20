@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package Client
  * @subpackage Html
  */
-
 namespace Aimeos\Client\Html\Cms\Page\Contact;
 
 /**
@@ -29,7 +27,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
     {
         return '';
     }
-
     /**
      * Modifies the cached body content to replace content based on sessions or cookies.
      *
@@ -42,7 +39,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
         $csrf = $this->view()->csrf();
         return str_replace(['%csrf.name%', '%csrf.value%'], [$csrf->name(), $csrf->value()], $content);
     }
-
     /**
      * Processes the input, e.g. store given values.
      *
@@ -53,25 +49,14 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
     {
         $view = $this->view();
         $params = $view->param('contact');
-
         if (!($params['url'] ?? null) && ($params['email'] ?? null) && ($params['message'] ?? null)) {
             $context = $this->context();
             $config = $context->config();
-
-            $toAddr = $config->get('resource/email/from-email');
-            $toName = $config->get('resource/email/from-name');
-
-            if ($toAddr) {
-                $label = $context->locale()->getSiteItem()->getLabel();
-
-                $context->mail()->create()
-                    ->to($toAddr, $toName)
-                    ->from($toAddr, $toName)
-                    ->replyTo($params['email'], $params['name'] ?? null)
-                    ->subject($context->translate('client', 'Your request') . ' - ' . $label)
-                    ->text($this->text($params))
-                    ->send();
-
+            $to_addr = $config->get('resource/email/from-email');
+            $to_name = $config->get('resource/email/from-name');
+            if ($to_addr) {
+                $label = $context->locale()->get_site_item()->get_label();
+                $context->mail()->create()->to($to_addr, $to_name)->from($to_addr, $to_name)->reply_to($params['email'], $params['name'] ?? null)->subject($context->translate('client', 'Your request') . ' - ' . $label)->text($this->text($params))->send();
                 $info = [$context->translate('client', 'Message sent successfully')];
                 $view->infos = array_merge($view->get('infos', []), $info);
             } else {
@@ -80,7 +65,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
             }
         }
     }
-
     /**
      * Returns the message text
      *
@@ -90,11 +74,9 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
     protected function text(array $params): string
     {
         $msg = '';
-
         foreach ($params as $key => $val) {
             $msg .= $key . ': ' . $val . "\n";
         }
-
         return $msg;
     }
 }

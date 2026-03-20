@@ -1,25 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package Admin
  * @subpackage JQAdm
  */
+namespace Aimeos\Admin\Jq_Adm\Cms;
 
-namespace Aimeos\Admin\JQAdm\Cms;
-
-sprintf('cms'); // for translation
-
+sprintf('cms');
+// for translation
 /**
  * Default implementation of cms JQAdm client.
  *
  * @package Admin
  * @subpackage JQAdm
  */
-class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements \Aimeos\Admin\JQAdm\Common\Admin\Factory\Iface
+class Standard extends \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Base implements \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Iface
 {
     /** admin/jqadm/cms/name
      * Class name of the used account favorite client implementation
@@ -54,7 +52,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @since 2020.10
      * @category Developer
      */
-
     /**
      * Adds the required data used in the template
      *
@@ -63,10 +60,9 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      */
     public function data(\Aimeos\Base\View\Iface $view): \Aimeos\Base\View\Iface
     {
-        $view->itemSubparts = $this->getSubClientNames();
+        $view->item_subparts = $this->get_sub_client_names();
         return $view;
     }
-
     /**
      * Batch update of a resource
      *
@@ -74,9 +70,8 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      */
     public function batch(): ?string
     {
-        return $this->batchBase('cms');
+        return $this->batch_base('cms');
     }
-
     /**
      * Copies a resource
      *
@@ -85,24 +80,19 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function copy(): ?string
     {
         $view = $this->object()->data($this->view());
-
         try {
             if (($id = $view->param('id')) === null) {
-                throw new \Aimeos\Admin\JQAdm\Exception(sprintf('Required parameter "%1$s" is missing', 'id'));
+                throw new \Aimeos\Admin\Jq_Adm\Exception(sprintf('Required parameter "%1$s" is missing', 'id'));
             }
-
-            $manager = \Aimeos\MShop::create($this->context(), 'cms');
-            $view->item = $manager->get($id, $this->getDomains());
-
-            $view->itemData = $this->toArray($view->item, true);
-            $view->itemBody = parent::copy();
+            $manager = \Aimeos\M_Shop::create($this->context(), 'cms');
+            $view->item = $manager->get($id, $this->get_domains());
+            $view->item_data = $this->to_array($view->item, true);
+            $view->item_body = parent::copy();
         } catch (\Exception $e) {
             $this->report($e, 'copy');
         }
-
         return $this->render($view);
     }
-
     /**
      * Creates a new resource
      *
@@ -111,25 +101,19 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function create(): ?string
     {
         $view = $this->object()->data($this->view());
-
         try {
             $data = $view->param('item', []);
-
             if (!isset($view->item)) {
-                $view->item = \Aimeos\MShop::create($this->context(), 'cms')->create();
+                $view->item = \Aimeos\M_Shop::create($this->context(), 'cms')->create();
             }
-
-            $data['cms.siteid'] = $view->item->getSiteId();
-
-            $view->itemData = array_replace_recursive($this->toArray($view->item), $data);
-            $view->itemBody = parent::create();
+            $data['cms.siteid'] = $view->item->get_site_id();
+            $view->item_data = array_replace_recursive($this->to_array($view->item), $data);
+            $view->item_body = parent::create();
         } catch (\Exception $e) {
             $this->report($e, 'create');
         }
-
         return $this->render($view);
     }
-
     /**
      * Deletes a resource
      *
@@ -140,39 +124,30 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
         $tags = ['cms'];
         $view = $this->view();
         $context = $this->context();
-
-        $manager = \Aimeos\MShop::create($context, 'cms');
+        $manager = \Aimeos\M_Shop::create($context, 'cms');
         $manager->begin();
-
         try {
             if (($ids = $view->param('id')) === null) {
-                throw new \Aimeos\Admin\JQAdm\Exception(sprintf('Required parameter "%1$s" is missing', 'id'));
+                throw new \Aimeos\Admin\Jq_Adm\Exception(sprintf('Required parameter "%1$s" is missing', 'id'));
             }
-
             $search = $manager->filter()->slice(0, count((array) $ids));
-            $search->setConditions($search->compare('==', 'cms.id', $ids));
-            $items = $manager->search($search, $this->getDomains());
-
+            $search->set_conditions($search->compare('==', 'cms.id', $ids));
+            $items = $manager->search($search, $this->get_domains());
             foreach ($items as $item) {
-                $tags[] = 'cms-' . $item->getId();
+                $tags[] = 'cms-' . $item->get_id();
                 $view->item = $item;
                 parent::delete();
             }
-
-            $manager->delete($items->toArray());
+            $manager->delete($items->to_array());
             $manager->commit();
-
-            $context->cache()->deleteByTags($tags);
-
+            $context->cache()->delete_by_tags($tags);
             return $this->redirect('cms', 'search', null, 'delete');
         } catch (\Exception $e) {
             $manager->rollback();
             $this->report($e, 'delete');
         }
-
         return $this->search();
     }
-
     /**
      * Returns a single resource
      *
@@ -181,24 +156,19 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function get(): ?string
     {
         $view = $this->object()->data($this->view());
-
         try {
             if (($id = $view->param('id')) === null) {
-                throw new \Aimeos\Admin\JQAdm\Exception(sprintf('Required parameter "%1$s" is missing', 'id'));
+                throw new \Aimeos\Admin\Jq_Adm\Exception(sprintf('Required parameter "%1$s" is missing', 'id'));
             }
-
-            $manager = \Aimeos\MShop::create($this->context(), 'cms');
-
-            $view->item = $manager->get($id, $this->getDomains());
-            $view->itemData = $this->toArray($view->item);
-            $view->itemBody = parent::get();
+            $manager = \Aimeos\M_Shop::create($this->context(), 'cms');
+            $view->item = $manager->get($id, $this->get_domains());
+            $view->item_data = $this->to_array($view->item);
+            $view->item_body = parent::get();
         } catch (\Exception $e) {
             $this->report($e, 'get');
         }
-
         return $this->render($view);
     }
-
     /**
      * Saves the data
      *
@@ -208,29 +178,22 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     {
         $view = $this->view();
         $context = $this->context();
-
-        $manager = \Aimeos\MShop::create($context, 'cms');
+        $manager = \Aimeos\M_Shop::create($context, 'cms');
         $manager->begin();
-
         try {
-            $item = $this->fromArray($view->param('item', []));
-            $view->item = $item->getId() ? $item : $manager->save($item);
-            $view->itemBody = parent::save();
-
+            $item = $this->from_array($view->param('item', []));
+            $view->item = $item->get_id() ? $item : $manager->save($item);
+            $view->item_body = parent::save();
             $manager->save(clone $view->item);
             $manager->commit();
-
-            $context->cache()->deleteByTags(['cms', 'cms-' . $view->item->getId()]);
-
-            return $this->redirect('cms', $view->param('next'), $view->item->getId(), 'save');
+            $context->cache()->delete_by_tags(['cms', 'cms-' . $view->item->get_id()]);
+            return $this->redirect('cms', $view->param('next'), $view->item->get_id(), 'save');
         } catch (\Exception $e) {
             $manager->rollback();
             $this->report($e, 'save');
         }
-
         return $this->create();
     }
-
     /**
      * Returns a list of resource according to the conditions
      *
@@ -239,22 +202,19 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function search(): ?string
     {
         $view = $this->view();
-
         try {
             $total = 0;
-            $params = $this->storeFilter($view->param(), 'cms');
-            $manager = \Aimeos\MShop::create($this->context(), 'cms');
-            $search = $this->initCriteria($manager->filter()->order('cms.url'), $params);
-
-            $view->items = $manager->search($search, $this->getDomains(), $total);
-            $view->filterAttributes = $manager->getSearchAttributes(true);
-            $view->filterOperators = $search->getOperators();
-            $view->itemBody = parent::search();
+            $params = $this->store_filter($view->param(), 'cms');
+            $manager = \Aimeos\M_Shop::create($this->context(), 'cms');
+            $search = $this->init_criteria($manager->filter()->order('cms.url'), $params);
+            $view->items = $manager->search($search, $this->get_domains(), $total);
+            $view->filter_attributes = $manager->get_search_attributes(true);
+            $view->filter_operators = $search->get_operators();
+            $view->item_body = parent::search();
             $view->total = $total;
         } catch (\Exception $e) {
             $this->report($e, 'search');
         }
-
         /** admin/jqadm/cms/template-list
          * Relative path to the HTML body template for the cms list.
          *
@@ -276,10 +236,8 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         $tplconf = 'admin/jqadm/cms/template-list';
         $default = 'cms/list';
-
         return $view->render($view->config($tplconf, $default));
     }
-
     /**
      * Returns the sub-client given by its name.
      *
@@ -287,7 +245,7 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param string|null $name Name of the sub-client (Default if null)
      * @return \Aimeos\Admin\JQAdm\Iface Sub-client object
      */
-    public function getSubClient(string $type, ?string $name = null): \Aimeos\Admin\JQAdm\Iface
+    public function get_sub_client(string $type, ?string $name = null): \Aimeos\Admin\Jq_Adm\Iface
     {
         /** admin/jqadm/cms/decorators/excludes
          * Excludes decorators added by the "common" option from the cms JQAdm client
@@ -314,7 +272,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/decorators/global
          * @see admin/jqadm/cms/decorators/local
          */
-
         /** admin/jqadm/cms/decorators/global
          * Adds a list of globally available decorators only to the cms JQAdm client
          *
@@ -338,7 +295,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/decorators/excludes
          * @see admin/jqadm/cms/decorators/local
          */
-
         /** admin/jqadm/cms/decorators/local
          * Adds a list of local decorators only to the cms JQAdm client
          *
@@ -362,15 +318,14 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/decorators/excludes
          * @see admin/jqadm/cms/decorators/global
          */
-        return $this->createSubClient('cms/' . $type, $name);
+        return $this->create_sub_client('cms/' . $type, $name);
     }
-
     /**
      * Returns the domain names whose items should be fetched too
      *
      * @return string[] List of domain names
      */
-    protected function getDomains(): array
+    protected function get_domains(): array
     {
         /** admin/jqadm/cms/domains
          * List of domain items that should be fetched along with the cms
@@ -385,13 +340,12 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         return $this->context()->config()->get('admin/jqadm/cms/domains', []);
     }
-
     /**
      * Returns the list of sub-client names configured for the client.
      *
      * @return array List of JQAdm client names
      */
-    protected function getSubClientNames(): array
+    protected function get_sub_client_names(): array
     {
         /** admin/jqadm/cms/subparts
          * List of JQAdm sub-clients rendered within the cms section
@@ -428,47 +382,39 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         return $this->context()->config()->get('admin/jqadm/cms/subparts', []);
     }
-
     /**
      * Creates new and updates existing items using the data array
      *
      * @param array $data Data array
      * @return \Aimeos\MShop\Cms\Item\Iface New cms item object
      */
-    protected function fromArray(array $data): \Aimeos\MShop\Cms\Item\Iface
+    protected function from_array(array $data): \Aimeos\M_Shop\Cms\Item\Iface
     {
-        $manager = \Aimeos\MShop::create($this->context(), 'cms');
-
+        $manager = \Aimeos\M_Shop::create($this->context(), 'cms');
         if (isset($data['cms.id']) && $data['cms.id'] != '') {
-            $item = $manager->get($data['cms.id'], $this->getDomains());
+            $item = $manager->get($data['cms.id'], $this->get_domains());
         } else {
             $item = $manager->create();
         }
-
-        $item->fromArray($data, true);
-
+        $item->from_array($data, true);
         return $item;
     }
-
     /**
      * Constructs the data array for the view from the given item
      *
      * @param \Aimeos\MShop\Cms\Item\Iface $item Cms item object
      * @return string[] Multi-dimensional associative list of item data
      */
-    protected function toArray(\Aimeos\MShop\Cms\Item\Iface $item, bool $copy = false): array
+    protected function to_array(\Aimeos\M_Shop\Cms\Item\Iface $item, bool $copy = false): array
     {
-        $data = $item->toArray(true);
-
+        $data = $item->to_array(true);
         if ($copy === true) {
-            $data['cms.siteid'] = $this->context()->locale()->getSiteId();
+            $data['cms.siteid'] = $this->context()->locale()->get_site_id();
             $data['cms.url'] = $data['cms.url'] . '_copy';
             $data['cms.id'] = '';
         }
-
         return $data;
     }
-
     /**
      * Returns the rendered template including the view data
      *
@@ -498,7 +444,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         $tplconf = 'admin/jqadm/cms/template-item';
         $default = 'cms/item';
-
         return $view->render($view->config($tplconf, $default));
     }
 }

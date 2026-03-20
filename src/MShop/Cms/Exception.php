@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, https://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package MShop
  * @subpackage Cms
  */
-
-namespace Aimeos\MShop\Cms;
+namespace Aimeos\M_Shop\Cms;
 
 /**
  * Generic exception thrown by Aimeos objects if no specialized exception is available
@@ -17,6 +15,6 @@ namespace Aimeos\MShop\Cms;
  * @package MShop
  * @subpackage Cms
  */
-class Exception extends \Aimeos\MShop\Exception
+class Exception extends \Aimeos\M_Shop\Exception
 {
 }

@@ -1,25 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package Admin
  * @subpackage JQAdm
  */
+namespace Aimeos\Admin\Jq_Adm\Cms\Content;
 
-namespace Aimeos\Admin\JQAdm\Cms\Content;
-
-sprintf('content'); // for translation
-
+sprintf('content');
+// for translation
 /**
  * Default implementation of cms SEO JQAdm client.
  *
  * @package Admin
  * @subpackage JQAdm
  */
-class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements \Aimeos\Admin\JQAdm\Common\Admin\Factory\Iface
+class Standard extends \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Base implements \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Iface
 {
     /** admin/jqadm/cms/content/name
      * Name of the SEO subpart used by the JQAdm cms implementation
@@ -31,7 +29,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @since 2020.10
      * @category Developer
      */
-
     /**
      * Copies a resource
      *
@@ -40,12 +37,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function copy(): ?string
     {
         $view = $this->object()->data($this->view());
-        $view->contentData = $this->toArray($view->item, true);
-        $view->contentBody = parent::copy();
-
+        $view->content_data = $this->to_array($view->item, true);
+        $view->content_body = parent::copy();
         return $this->render($view);
     }
-
     /**
      * Creates a new resource
      *
@@ -54,20 +49,16 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function create(): ?string
     {
         $view = $this->object()->data($this->view());
-        $siteid = $this->context()->locale()->getSiteId();
+        $siteid = $this->context()->locale()->get_site_id();
         $data = $view->param('content', []);
-
         foreach ($data as $idx => $entry) {
             $data[$idx]['cms.lists.siteid'] = $siteid;
             $data[$idx]['text.siteid'] = $siteid;
         }
-
-        $view->contentData = $data;
-        $view->contentBody = parent::create();
-
+        $view->content_data = $data;
+        $view->content_body = parent::create();
         return $this->render($view);
     }
-
     /**
      * Deletes a resource
      *
@@ -76,13 +67,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function delete(): ?string
     {
         parent::delete();
-
         $item = $this->view()->item;
-        $item->deleteListItems($item->getListItems('text', null, 'content', false)->toArray(), true);
-
+        $item->delete_list_items($item->get_list_items('text', null, 'content', false)->to_array(), true);
         return null;
     }
-
     /**
      * Returns a single resource
      *
@@ -91,12 +79,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function get(): ?string
     {
         $view = $this->object()->data($this->view());
-        $view->contentData = $this->toArray($view->item);
-        $view->contentBody = parent::get();
-
+        $view->content_data = $this->to_array($view->item);
+        $view->content_body = parent::get();
         return $this->render($view);
     }
-
     /**
      * Saves the data
      *
@@ -105,13 +91,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function save(): ?string
     {
         $view = $this->view();
-
-        $view->item = $this->fromArray($view->item, $view->param('content', []));
-        $view->contentBody = parent::save();
-
+        $view->item = $this->from_array($view->item, $view->param('content', []));
+        $view->content_body = parent::save();
         return null;
     }
-
     /**
      * Returns the sub-client given by its name.
      *
@@ -119,7 +102,7 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param string|null $name Name of the sub-client (Default if null)
      * @return \Aimeos\Admin\JQAdm\Iface Sub-client object
      */
-    public function getSubClient(string $type, ?string $name = null): \Aimeos\Admin\JQAdm\Iface
+    public function get_sub_client(string $type, ?string $name = null): \Aimeos\Admin\Jq_Adm\Iface
     {
         /** admin/jqadm/cms/content/decorators/excludes
          * Excludes decorators added by the "common" option from the cms JQAdm client
@@ -146,7 +129,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/content/decorators/global
          * @see admin/jqadm/cms/content/decorators/local
          */
-
         /** admin/jqadm/cms/content/decorators/global
          * Adds a list of globally available decorators only to the cms JQAdm client
          *
@@ -170,7 +152,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/content/decorators/excludes
          * @see admin/jqadm/cms/content/decorators/local
          */
-
         /** admin/jqadm/cms/content/decorators/local
          * Adds a list of local decorators only to the cms JQAdm client
          *
@@ -194,15 +175,14 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/content/decorators/excludes
          * @see admin/jqadm/cms/content/decorators/global
          */
-        return $this->createSubClient('cms/content/' . $type, $name);
+        return $this->create_sub_client('cms/content/' . $type, $name);
     }
-
     /**
      * Returns the list of sub-client names configured for the client.
      *
      * @return array List of JQAdm client names
      */
-    protected function getSubClientNames(): array
+    protected function get_sub_client_names(): array
     {
         /** admin/jqadm/cms/content/subparts
          * List of JQAdm sub-clients rendered within the cms content section
@@ -239,7 +219,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         return $this->context()->config()->get('admin/jqadm/cms/content/subparts', []);
     }
-
     /**
      * Adds the required data used in the content template
      *
@@ -251,42 +230,21 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
         $media = [];
         $context = $this->context();
         $locale = $context->locale();
-        $listTypeManager = \Aimeos\MShop::create($context, 'cms/lists/type');
-        $listSearch = $listTypeManager->filter(true)->order('cms.lists.type.code')->slice(0, 10000);
-
-        $view->contentListTypes = $listTypeManager->search($listSearch);
-
-        $theme = $locale->getSiteItem()->getTheme() ?: 'default';
+        $list_type_manager = \Aimeos\M_Shop::create($context, 'cms/lists/type');
+        $list_search = $list_type_manager->filter(true)->order('cms.lists.type.code')->slice(0, 10000);
+        $view->content_list_types = $list_type_manager->search($list_search);
+        $theme = $locale->get_site_item()->get_theme() ?: 'default';
         $rtl = in_array($view->param('locale'), ['ar', 'az', 'dv', 'fa', 'he', 'ku', 'ur']);
-        $view->config = [
-            'canvas' => [
-                'styles' => [
-                    $view->content($theme . '/app.' . ($rtl ? 'rtl.' : '') . 'css', 'fs-theme', true),
-                    $view->content($theme . '/aimeos.css', 'fs-theme', true),
-                    $view->content($theme . '/cms-page.css', 'fs-theme', true),
-                ],
-            ],
-            'langDir' => $rtl ? 'rtl' : '',
-        ];
-
-        foreach ($view->item->getRefItems('media') as $mediaItem) {
+        $view->config = ['canvas' => ['styles' => [$view->content($theme . '/app.' . ($rtl ? 'rtl.' : '') . 'css', 'fs-theme', true), $view->content($theme . '/aimeos.css', 'fs-theme', true), $view->content($theme . '/cms-page.css', 'fs-theme', true)]], 'langDir' => $rtl ? 'rtl' : ''];
+        foreach ($view->item->get_ref_items('media') as $media_item) {
             $srcset = [];
-
-            foreach ($mediaItem->getPreviews() as $width => $path) {
+            foreach ($media_item->get_previews() as $width => $path) {
                 $srcset[] = $view->content($path) . ' ' . $width . 'w';
             }
-
-            $media[] = [
-                'name' => $mediaItem->getLabel(),
-                'src' => $view->content($mediaItem->getPreview(true)),
-                'srcset' => join(', ', $srcset),
-                'type' => 'image',
-            ];
+            $media[] = ['name' => $media_item->get_label(), 'src' => $view->content($media_item->get_preview(true)), 'srcset' => join(', ', $srcset), 'type' => 'image'];
         }
-
         return $view->set('contentMedia', $media);
     }
-
     /**
      * Creates new and updates existing items using the data array
      *
@@ -294,52 +252,39 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param array $data Data array
      * @return \Aimeos\MShop\Cms\Item\Iface Modified cms item
      */
-    protected function fromArray(\Aimeos\MShop\Cms\Item\Iface $item, array $data): \Aimeos\MShop\Cms\Item\Iface
+    protected function from_array(\Aimeos\M_Shop\Cms\Item\Iface $item, array $data): \Aimeos\M_Shop\Cms\Item\Iface
     {
         $context = $this->context();
-
-        $textManager = \Aimeos\MShop::create($context, 'text');
-        $manager = \Aimeos\MShop::create($context, 'cms');
-
-        $listItems = $item->getListItems('text', null, 'content', false);
-
+        $text_manager = \Aimeos\M_Shop::create($context, 'text');
+        $manager = \Aimeos\M_Shop::create($context, 'cms');
+        $list_items = $item->get_list_items('text', null, 'content', false);
         foreach ($data as $idx => $entry) {
-            if (!($content = trim($this->val($entry, 'text.content', '')))) {
+            if (!$content = trim($this->val($entry, 'text.content', ''))) {
                 continue;
             }
-
             if ($el = json_decode($content, true)) {
                 $el['html'] = \Aimeos\Sanitizer\Sane::html($temp = $el['html'] ?? '');
                 $entry['text.content'] = json_encode($el);
             }
-
             $id = $this->val($entry, 'text.id', '');
             $type = $this->val($entry, 'cms.lists.type', 'default');
-
-            $listItem = $item->getListItem('text', $type, $id, false) ?: $manager->createListItem();
-            $refItem = $listItem->getRefItem() ?: $textManager->create();
-
-            $refItem->fromArray($entry, true)->setType('content');
+            $list_item = $item->get_list_item('text', $type, $id, false) ?: $manager->create_list_item();
+            $ref_item = $list_item->get_ref_item() ?: $text_manager->create();
+            $ref_item->from_array($entry, true)->set_type('content');
             $conf = [];
-
             foreach ((array) $this->val($entry, 'config', []) as $cfg) {
                 if (($key = trim($cfg['key'] ?? '')) !== '') {
                     $conf[$key] = trim($cfg['val'] ?? '');
                 }
             }
-
-            $listItem->fromArray($entry, true);
-            $listItem->setPosition($idx);
-            $listItem->setConfig($conf);
-
-            $item->addListItem('text', $listItem, $refItem);
-
-            unset($listItems[$listItem->getId()]);
+            $list_item->from_array($entry, true);
+            $list_item->set_position($idx);
+            $list_item->set_config($conf);
+            $item->add_list_item('text', $list_item, $ref_item);
+            unset($list_items[$list_item->get_id()]);
         }
-
-        return $item->deleteListItems($listItems->toArray(), true);
+        return $item->delete_list_items($list_items->to_array(), true);
     }
-
     /**
      * Constructs the data array for the view from the given item
      *
@@ -347,39 +292,31 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param bool $copy True if items should be copied, false if not
      * @return string[] Multi-dimensional associative list of item data
      */
-    protected function toArray(\Aimeos\MShop\Cms\Item\Iface $item, bool $copy = false): array
+    protected function to_array(\Aimeos\M_Shop\Cms\Item\Iface $item, bool $copy = false): array
     {
         $data = [];
-        $siteId = $this->context()->locale()->getSiteId();
-
-        foreach ($item->getListItems('text', null, 'content', false) as $listItem) {
-            if (($refItem = $listItem->getRefItem()) === null) {
+        $site_id = $this->context()->locale()->get_site_id();
+        foreach ($item->get_list_items('text', null, 'content', false) as $list_item) {
+            if (($ref_item = $list_item->get_ref_item()) === null) {
                 continue;
             }
-
-            $list = $listItem->toArray(true) + $refItem->toArray(true);
-
+            $list = $list_item->to_array(true) + $ref_item->to_array(true);
             if ($copy === true) {
-                $list['cms.lists.siteid'] = $siteId;
+                $list['cms.lists.siteid'] = $site_id;
                 $list['cms.lists.id'] = '';
-                $list['text.siteid'] = $siteId;
+                $list['text.siteid'] = $site_id;
                 $list['text.id'] = null;
             }
-
             $list['cms.lists.datestart'] = str_replace(' ', 'T', $list['cms.lists.datestart'] ?? '');
             $list['cms.lists.dateend'] = str_replace(' ', 'T', $list['cms.lists.dateend'] ?? '');
             $list['config'] = [];
-
-            foreach ($listItem->getConfig() as $key => $value) {
+            foreach ($list_item->get_config() as $key => $value) {
                 $list['config'][] = ['key' => $key, 'val' => $value];
             }
-
             $data[] = $list;
         }
-
         return $data;
     }
-
     /**
      * Returns the rendered template including the view data
      *
@@ -409,7 +346,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         $tplconf = 'admin/jqadm/cms/content/template-item';
         $default = 'cms/item-content';
-
         return $view->render($view->config($tplconf, $default));
     }
 }

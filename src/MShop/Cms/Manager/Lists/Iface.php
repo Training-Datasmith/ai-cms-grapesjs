@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, https://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package MShop
  * @subpackage Cms
  */
-
-namespace Aimeos\MShop\Cms\Manager\Lists;
+namespace Aimeos\M_Shop\Cms\Manager\Lists;
 
 /**
  * Interface for cms lists type manager.
@@ -17,6 +15,6 @@ namespace Aimeos\MShop\Cms\Manager\Lists;
  * @package MShop
  * @subpackage Cms
  */
-interface Iface extends \Aimeos\MShop\Common\Manager\Iface
+interface Iface extends \Aimeos\M_Shop\Common\Manager\Iface
 {
 }

@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, https://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2020-2026
  * @package MShop
  * @subpackage Cms
  */
-
-namespace Aimeos\MShop\Cms\Manager;
+namespace Aimeos\M_Shop\Cms\Manager;
 
 /**
  * Default cms manager implementation
@@ -17,33 +15,30 @@ namespace Aimeos\MShop\Cms\Manager;
  * @package MShop
  * @subpackage Cms
  */
-class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MShop\Cms\Manager\Iface, \Aimeos\MShop\Common\Manager\Factory\Iface
+class Standard extends \Aimeos\M_Shop\Common\Manager\Base implements \Aimeos\M_Shop\Cms\Manager\Iface, \Aimeos\M_Shop\Common\Manager\Factory\Iface
 {
-    use \Aimeos\MShop\Common\Manager\ListsRef\Traits;
-
+    use \Aimeos\M_Shop\Common\Manager\Lists_Ref\Traits;
     /**
      * Creates a new empty item instance
      *
      * @param array $values Values the item should be initialized with
      * @return \Aimeos\MShop\Cms\Item\Iface New cms item object
      */
-    public function create(array $values = []): \Aimeos\MShop\Common\Item\Iface
+    public function create(array $values = []): \Aimeos\M_Shop\Common\Item\Iface
     {
-        $values['cms.siteid'] ??= $this->context()->locale()->getSiteId();
-        return new \Aimeos\MShop\Cms\Item\Standard('cms.', $values);
+        $values['cms.siteid'] ??= $this->context()->locale()->get_site_id();
+        return new \Aimeos\M_Shop\Cms\Item\Standard('cms.', $values);
     }
-
     /**
      * Removes multiple items.
      *
      * @param \Aimeos\MShop\Common\Item\Iface[]|string[] $items List of item objects or IDs of the items
      * @return \Aimeos\MShop\Text\Manager\Iface Manager object for chaining method calls
      */
-    public function delete($items): \Aimeos\MShop\Common\Manager\Iface
+    public function delete($items): \Aimeos\M_Shop\Common\Manager\Iface
     {
-        return parent::delete($items)->deleteRefItems($items);
+        return parent::delete($items)->delete_ref_items($items);
     }
-
     /**
      * Creates a filter object.
      *
@@ -53,9 +48,8 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      */
     public function filter(?bool $default = false, bool $site = false): \Aimeos\Base\Criteria\Iface
     {
-        return $this->filterBase('cms', $default);
+        return $this->filter_base('cms', $default);
     }
-
     /**
      * Returns the item specified by its URL
      *
@@ -66,83 +60,42 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @param bool|null $default Add default criteria or NULL for relaxed default criteria
      * @return \Aimeos\MShop\Common\Item\Iface Item object
      */
-    public function find(
-        string $code,
-        array $ref = [],
-        ?string $domain = null,
-        ?string $type = null,
-        ?bool $default = false
-    ): \Aimeos\MShop\Common\Item\Iface {
-        return $this->findBase(['cms.url' => $code], $ref, $default);
+    public function find(string $code, array $ref = [], ?string $domain = null, ?string $type = null, ?bool $default = false): \Aimeos\M_Shop\Common\Item\Iface
+    {
+        return $this->find_base(['cms.url' => $code], $ref, $default);
     }
-
     /**
      * Returns the additional column/search definitions
      *
      * @return array Associative list of column names as keys and items implementing \Aimeos\Base\Criteria\Attribute\Iface
      */
-    public function getSaveAttributes(): array
+    public function get_save_attributes(): array
     {
-        return $this->createAttributes([
-            'cms.url' => [
-                'code' => 'cms.url',
-                'internalcode' => 'url',
-                'label' => 'Type',
-                'type' => 'string',
-            ],
-            'cms.label' => [
-                'code' => 'cms.label',
-                'internalcode' => 'label',
-                'label' => 'Label',
-                'type' => 'string',
-            ],
-            'cms.status' => [
-                'code' => 'cms.status',
-                'internalcode' => 'status',
-                'label' => 'Status',
-                'type' => 'int',
-            ],
-        ]);
+        return $this->create_attributes(['cms.url' => ['code' => 'cms.url', 'internalcode' => 'url', 'label' => 'Type', 'type' => 'string'], 'cms.label' => ['code' => 'cms.label', 'internalcode' => 'label', 'label' => 'Label', 'type' => 'string'], 'cms.status' => ['code' => 'cms.status', 'internalcode' => 'status', 'label' => 'Status', 'type' => 'int']]);
     }
-
     /**
      * Returns the attributes that can be used for searching.
      *
      * @param bool $withsub Return also attributes of sub-managers if true
      * @return \Aimeos\Base\Criteria\Attribute\Iface[] List of search attribute items
      */
-    public function getSearchAttributes(bool $withsub = true): array
+    public function get_search_attributes(bool $withsub = true): array
     {
-        $level = \Aimeos\MShop\Locale\Manager\Base::SITE_ALL;
+        $level = \Aimeos\M_Shop\Locale\Manager\Base::SITE_ALL;
         $level = $this->context()->config()->get('mshop/cms/manager/sitemode', $level);
-
-        return array_replace(parent::getSearchAttributes($withsub), $this->createAttributes([
-            'cms:has' => [
-                'code' => 'cms:has()',
-                'internalcode' => ':site AND :key AND mcmsli."id"',
-                'internaldeps' => ['LEFT JOIN "mshop_cms_list" AS mcmsli ON ( mcmsli."parentid" = mcms."id" )'],
-                'label' => 'Cms has list item, parameter(<domain>[,<list type>[,<reference ID>)]]',
-                'type' => 'null',
-                'public' => false,
-                'function' => function (&$source, array $params) use ($level): array {
-                    $keys = [];
-
-                    foreach ((array) ($params[1] ?? '') as $type) {
-                        foreach ((array) ($params[2] ?? '') as $id) {
-                            $keys[] = $params[0] . '|' . ($type ? $type . '|' : '') . $id;
-                        }
-                    }
-
-                    $sitestr = $this->siteString('mcmsli."siteid"', $level);
-                    $keystr = $this->toExpression('mcmsli."key"', $keys, ($params[2] ?? null) ? '==' : '=~');
-                    $source = str_replace([':site', ':key'], [$sitestr, $keystr], $source);
-
-                    return $params;
-                },
-            ],
-        ]));
+        return array_replace(parent::get_search_attributes($withsub), $this->create_attributes(['cms:has' => ['code' => 'cms:has()', 'internalcode' => ':site AND :key AND mcmsli."id"', 'internaldeps' => ['LEFT JOIN "mshop_cms_list" AS mcmsli ON ( mcmsli."parentid" = mcms."id" )'], 'label' => 'Cms has list item, parameter(<domain>[,<list type>[,<reference ID>)]]', 'type' => 'null', 'public' => false, 'function' => function (&$source, array $params) use ($level): array {
+            $keys = [];
+            foreach ((array) ($params[1] ?? '') as $type) {
+                foreach ((array) ($params[2] ?? '') as $id) {
+                    $keys[] = $params[0] . '|' . ($type ? $type . '|' : '') . $id;
+                }
+            }
+            $sitestr = $this->site_string('mcmsli."siteid"', $level);
+            $keystr = $this->to_expression('mcmsli."key"', $keys, $params[2] ?? null ? '==' : '=~');
+            $source = str_replace([':site', ':key'], [$sitestr, $keystr], $source);
+            return $params;
+        }]]));
     }
-
     /**
      * Adds or updates an item object or a list of them.
      *
@@ -153,12 +106,9 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
     public function save($items, bool $fetch = true)
     {
         $items = parent::save($items, $fetch);
-
-        $this->context()->cache()->deleteByTags(map($items)->getId()->prefix('cms-'));
-
+        $this->context()->cache()->delete_by_tags(map($items)->get_id()->prefix('cms-'));
         return $items;
     }
-
     /**
      * Saves the dependent items of the item
      *
@@ -166,12 +116,11 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @param bool $fetch True if the new ID should be returned in the item
      * @return \Aimeos\MShop\Common\Item\Iface Updated item
      */
-    public function saveRefs(\Aimeos\MShop\Common\Item\Iface $item, bool $fetch = true): \Aimeos\MShop\Common\Item\Iface
+    public function save_refs(\Aimeos\M_Shop\Common\Item\Iface $item, bool $fetch = true): \Aimeos\M_Shop\Common\Item\Iface
     {
-        $this->saveListItems($item, 'cms', $fetch);
+        $this->save_list_items($item, 'cms', $fetch);
         return $item;
     }
-
     /**
      * Merges the data from the given map and the referenced items
      *
@@ -179,17 +128,14 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @param array $ref List of referenced items to fetch and add to the entries
      * @return array Associative list of ID as key and the updated entries as value
      */
-    public function searchRefs(array $entries, array $ref): array
+    public function search_refs(array $entries, array $ref): array
     {
-        $parentIds = array_keys($entries);
-
-        foreach ($this->getListItems($parentIds, $ref, 'cms') as $id => $listItem) {
-            $entries[$listItem->getParentId()]['.listitems'][$id] = $listItem;
+        $parent_ids = array_keys($entries);
+        foreach ($this->get_list_items($parent_ids, $ref, 'cms') as $id => $list_item) {
+            $entries[$list_item->get_parent_id()]['.listitems'][$id] = $list_item;
         }
-
         return $entries;
     }
-
     /**
      * Returns the prefix for the item properties and search keys.
      *
@@ -199,7 +145,6 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
     {
         return 'cms.';
     }
-
     /** madmin/cms/manager/resource
      * Name of the database connection resource to use
      *
@@ -211,7 +156,6 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @param string Database connection name
      * @since 2023.04
      */
-
     /** mshop/cms/manager/name
      * Class name of the used cms manager implementation
      *
@@ -245,7 +189,6 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @since 2020.10
      * @category Developer
      */
-
     /** mshop/cms/manager/decorators/excludes
      * Excludes decorators added by the "common" option from the cms manager
      *
@@ -271,7 +214,6 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/decorators/global
      * @see mshop/cms/manager/decorators/local
      */
-
     /** mshop/cms/manager/decorators/global
      * Adds a list of globally available decorators only to the cms manager
      *
@@ -296,7 +238,6 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/decorators/excludes
      * @see mshop/cms/manager/decorators/local
      */
-
     /** mshop/cms/manager/decorators/local
      * Adds a list of local decorators only to the cms manager
      *
@@ -321,7 +262,6 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/decorators/excludes
      * @see mshop/cms/manager/decorators/global
      */
-
     /** mshop/cms/manager/submanagers
      * List of manager names that can be instantiated by the cms manager
      *
@@ -339,13 +279,11 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @since 2020.10
      * @category Developer
      */
-
     /** mshop/cms/manager/delete/mysql
      * Deletes the items matched by the given IDs from the database
      *
      * @see mshop/cms/manager/delete/ansi
      */
-
     /** mshop/cms/manager/delete/ansi
      * Deletes the items matched by the given IDs from the database
      *
@@ -370,13 +308,11 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/search/ansi
      * @see mshop/cms/manager/count/ansi
      */
-
     /** mshop/cms/manager/insert/mysql
      * Inserts a new cms record into the database table
      *
      * @see mshop/cms/manager/insert/ansi
      */
-
     /** mshop/cms/manager/insert/ansi
      * Inserts a new cms record into the database table
      *
@@ -406,13 +342,11 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/search/ansi
      * @see mshop/cms/manager/count/ansi
      */
-
     /** mshop/cms/manager/update/mysql
      * Updates an existing cms record in the database
      *
      * @see mshop/cms/manager/update/ansi
      */
-
     /** mshop/cms/manager/update/ansi
      * Updates an existing cms record in the database
      *
@@ -439,13 +373,11 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/search/ansi
      * @see mshop/cms/manager/count/ansi
      */
-
     /** mshop/cms/manager/newid/mysql
      * Retrieves the ID generated by the database when inserting a new record
      *
      * @see mshop/cms/manager/newid/ansi
      */
-
     /** mshop/cms/manager/newid/ansi
      * Retrieves the ID generated by the database when inserting a new record
      *
@@ -476,7 +408,6 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/search/ansi
      * @see mshop/cms/manager/count/ansi
      */
-
     /** mshop/cms/manager/sitemode
      * Mode how items from levels below or above in the site tree are handled
      *
@@ -506,13 +437,11 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @since 2020.10
      * @see mshop/locale/manager/sitelevel
      */
-
     /** mshop/cms/manager/search/mysql
      * Retrieves the records matched by the given criteria in the database
      *
      * @see mshop/cms/manager/search/ansi
      */
-
     /** mshop/cms/manager/search/ansi
      * Retrieves the records matched by the given criteria in the database
      *
@@ -564,13 +493,11 @@ class Standard extends \Aimeos\MShop\Common\Manager\Base implements \Aimeos\MSho
      * @see mshop/cms/manager/delete/ansi
      * @see mshop/cms/manager/count/ansi
      */
-
     /** mshop/cms/manager/count/mysql
      * Counts the number of records matched by the given criteria in the database
      *
      * @see mshop/cms/manager/count/ansi
      */
-
     /** mshop/cms/manager/count/ansi
      * Counts the number of records matched by the given criteria in the database
      *

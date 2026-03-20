@@ -1,25 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package Admin
  * @subpackage JQAdm
  */
+namespace Aimeos\Admin\Jq_Adm\Cms\Media;
 
-namespace Aimeos\Admin\JQAdm\Cms\Media;
-
-sprintf('media'); // for translation
-
+sprintf('media');
+// for translation
 /**
  * Default implementation of cms media JQAdm client.
  *
  * @package Admin
  * @subpackage JQAdm
  */
-class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements \Aimeos\Admin\JQAdm\Common\Admin\Factory\Iface
+class Standard extends \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Base implements \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Iface
 {
     /** admin/jqadm/cms/media/name
      * Name of the media subpart used by the JQAdm cms implementation
@@ -31,7 +29,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @since 2021.04
      * @category Developer
      */
-
     /**
      * Adds the required data used in the cms template
      *
@@ -41,19 +38,14 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function data(\Aimeos\Base\View\Iface $view): \Aimeos\Base\View\Iface
     {
         $context = $this->context();
-
-        $typeManager = \Aimeos\MShop::create($context, 'media/type');
-        $listTypeManager = \Aimeos\MShop::create($context, 'cms/lists/type');
-
-        $search = $typeManager->filter(true)->order('media.type.code')->slice(0, 10000);
-        $listSearch = $listTypeManager->filter(true)->order('cms.lists.type.code')->slice(0, 10000);
-
-        $view->mediaListTypes = $listTypeManager->search($listSearch);
-        $view->mediaTypes = $typeManager->search($search);
-
+        $type_manager = \Aimeos\M_Shop::create($context, 'media/type');
+        $list_type_manager = \Aimeos\M_Shop::create($context, 'cms/lists/type');
+        $search = $type_manager->filter(true)->order('media.type.code')->slice(0, 10000);
+        $list_search = $list_type_manager->filter(true)->order('cms.lists.type.code')->slice(0, 10000);
+        $view->media_list_types = $list_type_manager->search($list_search);
+        $view->media_types = $type_manager->search($search);
         return $view;
     }
-
     /**
      * Copies a resource
      *
@@ -62,13 +54,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function copy(): ?string
     {
         $view = $this->object()->data($this->view());
-
-        $view->mediaData = $this->toArray($view->item, true);
-        $view->mediaBody = parent::copy();
-
+        $view->media_data = $this->to_array($view->item, true);
+        $view->media_body = parent::copy();
         return $this->render($view);
     }
-
     /**
      * Creates a new resource
      *
@@ -77,24 +66,19 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function create(): ?string
     {
         $view = $this->object()->data($this->view());
-        $siteid = $this->context()->locale()->getSiteId();
-
-        $itemData = $this->toArray($view->item);
-        $data = array_replace_recursive($itemData, $view->param('media', []));
-
+        $siteid = $this->context()->locale()->get_site_id();
+        $item_data = $this->to_array($view->item);
+        $data = array_replace_recursive($item_data, $view->param('media', []));
         foreach ($data as $idx => $entry) {
             $data[$idx]['media.siteid'] = $siteid;
             $data[$idx]['media.url'] = $entry['media.url'] ?? null;
             $data[$idx]['media.preview'] = $entry['media.preview'] ?? null;
             $data[$idx]['cms.lists.siteid'] = $siteid;
         }
-
-        $view->mediaData = $data;
-        $view->mediaBody = parent::create();
-
+        $view->media_data = $data;
+        $view->media_body = parent::create();
         return $this->render($view);
     }
-
     /**
      * Deletes a resource
      *
@@ -103,13 +87,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function delete(): ?string
     {
         parent::delete();
-
         $item = $this->view()->item;
-        $this->deleteMediaItems($item, $item->getListItems('media', null, null, false)->toArray());
-
+        $this->delete_media_items($item, $item->get_list_items('media', null, null, false)->to_array());
         return null;
     }
-
     /**
      * Returns a single resource
      *
@@ -118,13 +99,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function get(): ?string
     {
         $view = $this->object()->data($this->view());
-
-        $view->mediaData = $this->toArray($view->item);
-        $view->mediaBody = parent::get();
-
+        $view->media_data = $this->to_array($view->item);
+        $view->media_body = parent::get();
         return $this->render($view);
     }
-
     /**
      * Saves the data
      *
@@ -133,13 +111,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function save(): ?string
     {
         $view = $this->view();
-
-        $view->item = $this->fromArray($view->item, $view->param('media', []));
-        $view->mediaBody = parent::save();
-
+        $view->item = $this->from_array($view->item, $view->param('media', []));
+        $view->media_body = parent::save();
         return null;
     }
-
     /**
      * Returns the sub-client given by its name.
      *
@@ -147,7 +122,7 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param string|null $name Name of the sub-client (Default if null)
      * @return \Aimeos\Admin\JQAdm\Iface Sub-client object
      */
-    public function getSubClient(string $type, ?string $name = null): \Aimeos\Admin\JQAdm\Iface
+    public function get_sub_client(string $type, ?string $name = null): \Aimeos\Admin\Jq_Adm\Iface
     {
         /** admin/jqadm/cms/media/decorators/excludes
          * Excludes decorators added by the "common" option from the cms JQAdm client
@@ -174,7 +149,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/media/decorators/global
          * @see admin/jqadm/cms/media/decorators/local
          */
-
         /** admin/jqadm/cms/media/decorators/global
          * Adds a list of globally available decorators only to the cms JQAdm client
          *
@@ -198,7 +172,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/media/decorators/excludes
          * @see admin/jqadm/cms/media/decorators/local
          */
-
         /** admin/jqadm/cms/media/decorators/local
          * Adds a list of local decorators only to the cms JQAdm client
          *
@@ -222,9 +195,8 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/media/decorators/excludes
          * @see admin/jqadm/cms/media/decorators/global
          */
-        return $this->createSubClient('cms/media/' . $type, $name);
+        return $this->create_sub_client('cms/media/' . $type, $name);
     }
-
     /**
      * Removes the media reference and the media item if not shared
      *
@@ -232,35 +204,30 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param array $listItems Media list items to be removed
      * @return \Aimeos\MShop\Cms\Item\Iface Modified cms item
      */
-    protected function deleteMediaItems(\Aimeos\MShop\Cms\Item\Iface $item, array $listItems): \Aimeos\MShop\Cms\Item\Iface
+    protected function delete_media_items(\Aimeos\M_Shop\Cms\Item\Iface $item, array $list_items): \Aimeos\M_Shop\Cms\Item\Iface
     {
         $context = $this->context();
-        $mediaManager = \Aimeos\MShop::create($context, 'media');
-        $manager = \Aimeos\MShop::create($context, 'cms');
+        $media_manager = \Aimeos\M_Shop::create($context, 'media');
+        $manager = \Aimeos\M_Shop::create($context, 'cms');
         $search = $manager->filter();
-
-        foreach ($listItems as $listItem) {
-            $func = $search->make('cms:has', ['media', $listItem->getType(), $listItem->getRefId()]);
-            $search->setConditions($search->compare('!=', $func, null));
+        foreach ($list_items as $list_item) {
+            $func = $search->make('cms:has', ['media', $list_item->get_type(), $list_item->get_ref_id()]);
+            $search->set_conditions($search->compare('!=', $func, null));
             $items = $manager->search($search);
-            $refItem = null;
-
-            if (count($items) === 1 && ($refItem = $listItem->getRefItem()) !== null) {
-                $mediaManager->delete($refItem);
+            $ref_item = null;
+            if (count($items) === 1 && ($ref_item = $list_item->get_ref_item()) !== null) {
+                $media_manager->delete($ref_item);
             }
-
-            $item->deleteListItem('media', $listItem, $refItem);
+            $item->delete_list_item('media', $list_item, $ref_item);
         }
-
         return $item;
     }
-
     /**
      * Returns the list of sub-client names configured for the client.
      *
      * @return array List of JQAdm client names
      */
-    protected function getSubClientNames(): array
+    protected function get_sub_client_names(): array
     {
         /** admin/jqadm/cms/media/subparts
          * List of JQAdm sub-clients rendered within the cms media section
@@ -297,7 +264,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         return $this->context()->config()->get('admin/jqadm/cms/media/subparts', []);
     }
-
     /**
      * Creates new and updates existing items using the data array
      *
@@ -305,49 +271,36 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param array $data Data array
      * @return \Aimeos\MShop\Cms\Item\Iface Modified cms item
      */
-    protected function fromArray(\Aimeos\MShop\Cms\Item\Iface $item, array $data): \Aimeos\MShop\Cms\Item\Iface
+    protected function from_array(\Aimeos\M_Shop\Cms\Item\Iface $item, array $data): \Aimeos\M_Shop\Cms\Item\Iface
     {
         $context = $this->context();
-
-        $manager = \Aimeos\MShop::create($context, 'cms');
-        $mediaManager = \Aimeos\MShop::create($context, 'media');
-
-        $listItems = $item->getListItems('media', null, null, false);
-        $files = (array) $this->view()->request()->getUploadedFiles();
-
+        $manager = \Aimeos\M_Shop::create($context, 'cms');
+        $media_manager = \Aimeos\M_Shop::create($context, 'media');
+        $list_items = $item->get_list_items('media', null, null, false);
+        $files = (array) $this->view()->request()->get_uploaded_files();
         foreach ($data as $idx => $entry) {
             $id = $this->val($entry, 'media.id', '');
             $type = $this->val($entry, 'cms.lists.type', 'default');
-
-            $listItem = $item->getListItem('media', $type, $id, false) ?: $manager->createListItem();
-            $refItem = $listItem->getRefItem() ?: $mediaManager->create();
-
-            $refItem->fromArray($entry, true)->setDomain('cms');
-
+            $list_item = $item->get_list_item('media', $type, $id, false) ?: $manager->create_list_item();
+            $ref_item = $list_item->get_ref_item() ?: $media_manager->create();
+            $ref_item->from_array($entry, true)->set_domain('cms');
             $preview = $this->val($files, 'media/' . $idx . '/preview');
             $file = $this->val($files, 'media/' . $idx . '/file');
-
-            if ($refItem->getId() === null && $refItem->getUrl() !== '') {
-                $refItem = $mediaManager->copy($refItem);
+            if ($ref_item->get_id() === null && $ref_item->get_url() !== '') {
+                $ref_item = $media_manager->copy($ref_item);
             }
-
-            $refItem = $mediaManager->upload($refItem, $file, $preview);
-            $listItem->fromArray($entry, true)->setPosition($idx)->setConfig([]);
-
+            $ref_item = $media_manager->upload($ref_item, $file, $preview);
+            $list_item->from_array($entry, true)->set_position($idx)->set_config([]);
             foreach ((array) $this->val($entry, 'config', []) as $cfg) {
                 if (($key = trim($cfg['key'] ?? '')) !== '' && ($val = trim($cfg['val'] ?? '')) !== '') {
-                    $listItem->setConfigValue($key, json_decode($val, true) ?? $val);
+                    $list_item->set_config_value($key, json_decode($val, true) ?? $val);
                 }
             }
-
-            $item->addListItem('media', $listItem, $refItem);
-
-            unset($listItems[$listItem->getId()]);
+            $item->add_list_item('media', $list_item, $ref_item);
+            unset($list_items[$list_item->get_id()]);
         }
-
-        return $this->deleteMediaItems($item, $listItems->toArray());
+        return $this->delete_media_items($item, $list_items->to_array());
     }
-
     /**
      * Constructs the data array for the view from the given item
      *
@@ -355,42 +308,33 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param bool $copy True if items should be copied, false if not
      * @return string[] Multi-dimensional associative list of item data
      */
-    protected function toArray(\Aimeos\MShop\Cms\Item\Iface $item, bool $copy = false): array
+    protected function to_array(\Aimeos\M_Shop\Cms\Item\Iface $item, bool $copy = false): array
     {
         $data = [];
-        $siteId = $this->context()->locale()->getSiteId();
-
-        foreach ($item->getListItems('media', null, null, false) as $listItem) {
-            if (($refItem = $listItem->getRefItem()) === null) {
+        $site_id = $this->context()->locale()->get_site_id();
+        foreach ($item->get_list_items('media', null, null, false) as $list_item) {
+            if (($ref_item = $list_item->get_ref_item()) === null) {
                 continue;
             }
-
-            $list = $listItem->toArray(true) + $refItem->toArray(true);
-
+            $list = $list_item->to_array(true) + $ref_item->to_array(true);
             if ($copy === true) {
-                $list['cms.lists.siteid'] = $siteId;
+                $list['cms.lists.siteid'] = $site_id;
                 $list['cms.lists.id'] = '';
-                $list['media.siteid'] = $siteId;
+                $list['media.siteid'] = $site_id;
                 $list['media.id'] = null;
             }
-
-            $list['media.previews'] = $this->view()->imageset($refItem->getPreviews(), $refItem->getFileSystem());
-            $list['media.preview'] = $this->view()->content($refItem->getPreview(), $refItem->getFileSystem());
-
+            $list['media.previews'] = $this->view()->imageset($ref_item->get_previews(), $ref_item->get_file_system());
+            $list['media.preview'] = $this->view()->content($ref_item->get_preview(), $ref_item->get_file_system());
             $list['cms.lists.datestart'] = str_replace(' ', 'T', $list['cms.lists.datestart'] ?? '');
             $list['cms.lists.dateend'] = str_replace(' ', 'T', $list['cms.lists.dateend'] ?? '');
             $list['config'] = [];
-
-            foreach ($listItem->getConfig() as $key => $value) {
+            foreach ($list_item->get_config() as $key => $value) {
                 $list['config'][] = ['key' => $key, 'val' => $value];
             }
-
             $data[] = $list;
         }
-
         return $data;
     }
-
     /**
      * Returns the rendered template including the view data
      *
@@ -420,7 +364,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         $tplconf = 'admin/jqadm/cms/media/template-item';
         $default = 'cms/item-media';
-
         return $view->render($view->config($tplconf, $default));
     }
 }

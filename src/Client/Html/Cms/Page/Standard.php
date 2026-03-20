@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2020-2026
  * @package Client
  * @subpackage Html
  */
-
 namespace Aimeos\Client\Html\Cms\Page;
 
 /**
@@ -52,7 +50,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
      * @since 2021.04
      * @category Developer
      */
-
     /** client/html/cms/page/subparts
      * List of HTML sub-clients rendered within the cms page section
      *
@@ -86,13 +83,11 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
      * @since 2021.04
      * @category Developer
      */
-    private string $subPartPath = 'client/html/cms/page/subparts';
-    private array $subPartNames = ['contact', 'cataloglist'];
-
+    private string $sub_part_path = 'client/html/cms/page/subparts';
+    private array $sub_part_names = ['contact', 'cataloglist'];
     private array $tags = [];
     private ?string $expire = null;
     private ?\Aimeos\Base\View\Iface $view = null;
-
     /**
      * Returns the HTML code for insertion into the body.
      *
@@ -115,7 +110,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
          * @see client/html/cms/filter/cache
          * @see client/html/cms/lists/cache
          */
-
         /** client/html/cms/page
          * All parameters defined for the cms page component and its subparts
          *
@@ -128,32 +122,23 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
          */
         $confkey = 'client/html/cms/page';
         $prefixes = [];
-
         $path = '/' . trim($this->view()->param('path'), '/');
-
         if ($html = $this->cached('body', $uid . '-' . $path, $prefixes, $confkey)) {
             return $this->object()->modify($html, $uid);
         }
-
-        $view = ($this->view ??= $this->object()->data($this->view(), $this->tags, $this->expire));
-
-        if (!isset($view->pageCmsItem)) {
+        $view = $this->view ??= $this->object()->data($this->view(), $this->tags, $this->expire);
+        if (!isset($view->page_cms_item)) {
             return '';
         }
-
         $html = '';
-        foreach ($this->getSubClients() as $subclient) {
-            $html .= $subclient->setView($view)->body($uid);
+        foreach ($this->get_sub_clients() as $subclient) {
+            $html .= $subclient->set_view($view)->body($uid);
         }
-
         $template = $this->context()->config()->get('client/html/cms/page/template-body', 'cms/page/body');
         $html = $view->set('body', $html)->render($template);
-
         $this->cache('body', $uid . '-' . $path, $prefixes, $confkey, $html, $this->tags, $this->expire);
-
         return $this->object()->modify($html, $uid);
     }
-
     /**
      * Returns the HTML string for insertion into the header.
      *
@@ -165,25 +150,18 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
         $path = '/' . trim($this->view()->param('path'), '/');
         $confkey = 'client/html/cms/page';
         $prefixes = [];
-
         if ($html = $this->cached('header', $uid . '-' . $path, $prefixes, $confkey)) {
             return $this->object()->modify($html, $uid);
         }
-
-        $view = ($this->view ??= $this->object()->data($this->view(), $this->tags, $this->expire));
-
-        if (!isset($view->pageCmsItem)) {
+        $view = $this->view ??= $this->object()->data($this->view(), $this->tags, $this->expire);
+        if (!isset($view->page_cms_item)) {
             return '';
         }
-
         $template = $this->context()->config()->get('client/html/cms/page/template-header', 'cms/page/header');
         $html = $view->render($template);
-
         $this->cache('header', $uid . '-' . $path, $prefixes, $confkey, $html, $this->tags, $this->expire);
-
         return $this->object()->modify($html, $uid);
     }
-
     /**
      * Returns the sub-client given by its name.
      *
@@ -191,7 +169,7 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
      * @param string|null $name Name of the sub-client (Default if null)
      * @return \Aimeos\Client\Html\Iface Sub-client object
      */
-    public function getSubClient(string $type, ?string $name = null): \Aimeos\Client\Html\Iface
+    public function get_sub_client(string $type, ?string $name = null): \Aimeos\Client\Html\Iface
     {
         /** client/html/cms/page/decorators/excludes
          * Excludes decorators added by the "common" option from the cms page html client
@@ -218,7 +196,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
          * @see client/html/cms/page/decorators/global
          * @see client/html/cms/page/decorators/local
          */
-
         /** client/html/cms/page/decorators/global
          * Adds a list of globally available decorators only to the cms page html client
          *
@@ -242,7 +219,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
          * @see client/html/cms/page/decorators/excludes
          * @see client/html/cms/page/decorators/local
          */
-
         /** client/html/cms/page/decorators/local
          * Adds a list of local decorators only to the cms page html client
          *
@@ -266,9 +242,8 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
          * @see client/html/cms/page/decorators/excludes
          * @see client/html/cms/page/decorators/global
          */
-        return $this->createSubClient('cms/page/' . $type, $name);
+        return $this->create_sub_client('cms/page/' . $type, $name);
     }
-
     /**
      * Sets the necessary parameter values in the view.
      *
@@ -281,7 +256,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
     {
         $context = $this->context();
         $controller = \Aimeos\Controller\Frontend::create($context, 'cms');
-
         /** client/html/cms/page/domains
          * A list of domain names whose items should be available in the cms page view template
          *
@@ -296,35 +270,26 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
          * @since 2021.04
          */
         $domains = $context->config()->get('client/html/cms/page/domains', ['text']);
-
-        $path = array_unique([
-            '/' . trim($view->param('path'), '/'),
-            '/' . trim($view->request()->getUri()->getPath(), '/'),
-        ]);
-
+        $path = array_unique(['/' . trim($view->param('path'), '/'), '/' . trim($view->request()->get_uri()->get_path(), '/')]);
         if ($page = $controller->uses($domains)->compare('==', 'cms.url', $path)->search()->first()) {
-            $this->addMetaItems($page, $expire, $tags);
-
-            $view->pageCmsItem = $page;
-            $view->pageContent = $page->getRefItems('text', 'content')->map(function ($item): string {
-                $data = ($json = json_decode($item->getContent(), true)) ? $json['html'] : $item->getContent();
+            $this->add_meta_items($page, $expire, $tags);
+            $view->page_cms_item = $page;
+            $view->page_content = $page->get_ref_items('text', 'content')->map(function ($item): string {
+                $data = ($json = json_decode($item->get_content(), true)) ? $json['html'] : $item->get_content();
                 return '<div class="cms-content">' . $data . '</div>';
             })->all();
         }
-
         return parent::data($view, $tags, $expire);
     }
-
     /**
      * Returns the list of sub-client names configured for the client.
      *
      * @return array List of HTML client names
      */
-    protected function getSubClientNames(): array
+    protected function get_sub_client_names(): array
     {
-        return $this->context()->config()->get($this->subPartPath, $this->subPartNames);
+        return $this->context()->config()->get($this->sub_part_path, $this->sub_part_names);
     }
-
     /** client/html/cms/page/template-body
      * Relative path to the HTML body template of the cms page client.
      *
@@ -345,7 +310,6 @@ class Standard extends \Aimeos\Client\Html\Common\Client\Factory\Base implements
      * @category Developer
      * @see client/html/cms/page/template-header
      */
-
     /** client/html/cms/page/template-header
      * Relative path to the HTML header template of the cms page client.
      *

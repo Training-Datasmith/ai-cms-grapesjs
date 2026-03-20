@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package Controller
  * @subpackage Frontend
  */
-
 namespace Aimeos\Controller\Frontend\Cms;
 
 /**
@@ -52,7 +50,6 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @since 2021.04
      * @category Developer
      */
-
     /** controller/frontend/cms/decorators/excludes
      * Excludes decorators added by the "common" option from the cms frontend controllers
      *
@@ -78,7 +75,6 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @see controller/frontend/cms/decorators/global
      * @see controller/frontend/cms/decorators/local
      */
-
     /** controller/frontend/cms/decorators/global
      * Adds a list of globally available decorators only to the cms frontend controllers
      *
@@ -102,7 +98,6 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @see controller/frontend/cms/decorators/excludes
      * @see controller/frontend/cms/decorators/local
      */
-
     /** controller/frontend/cms/decorators/local
      * Adds a list of local decorators only to the cms frontend controllers
      *
@@ -127,26 +122,22 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @see controller/frontend/cms/decorators/excludes
      * @see controller/frontend/cms/decorators/global
      */
-
     private array $domains = [];
     private array $conditions = [];
     private \Aimeos\Base\Criteria\Iface $filter;
-    private \Aimeos\MShop\Common\Manager\Iface $manager;
-
+    private \Aimeos\M_Shop\Common\Manager\Iface $manager;
     /**
      * Common initialization for controller classes
      *
      * @param \Aimeos\MShop\ContextIface $context Common MShop context object
      */
-    public function __construct(\Aimeos\MShop\ContextIface $context)
+    public function __construct(\Aimeos\M_Shop\Context_Iface $context)
     {
         parent::__construct($context);
-
-        $this->manager = \Aimeos\MShop::create($context, 'cms');
+        $this->manager = \Aimeos\M_Shop::create($context, 'cms');
         $this->filter = $this->manager->filter(true);
-        $this->conditions[] = $this->filter->getConditions();
+        $this->conditions[] = $this->filter->get_conditions();
     }
-
     /**
      * Clones objects in controller and resets values
      */
@@ -154,7 +145,6 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
     {
         $this->filter = clone $this->filter;
     }
-
     /**
      * Adds generic condition for filtering
      *
@@ -169,7 +159,6 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
         $this->conditions[] = $this->filter->compare($operator, $key, $value);
         return $this;
     }
-
     /**
      * Returns the cms for the given cms code
      *
@@ -177,11 +166,10 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @return \Aimeos\MShop\Cms\Item\Iface Cms item including the referenced domains items
      * @since 2021.04
      */
-    public function find(string $code): \Aimeos\MShop\Cms\Item\Iface
+    public function find(string $code): \Aimeos\M_Shop\Cms\Item\Iface
     {
         return $this->manager->find($code, $this->domains, null, null, true);
     }
-
     /**
      * Creates a search function string for the given name and parameters
      *
@@ -193,7 +181,6 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
     {
         return $this->filter->make($name, $params);
     }
-
     /**
      * Returns the cms for the given cms ID
      *
@@ -201,11 +188,10 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @return \Aimeos\MShop\Cms\Item\Iface Cms item including the referenced domains items
      * @since 2021.04
      */
-    public function get(string $id): \Aimeos\MShop\Cms\Item\Iface
+    public function get(string $id): \Aimeos\M_Shop\Cms\Item\Iface
     {
         return $this->manager->get($id, $this->domains, true);
     }
-
     /**
      * Adds a filter to return only items containing a reference to the given ID
      *
@@ -215,17 +201,15 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @return \Aimeos\Controller\Frontend\Cms\Iface Cms controller for fluent interface
      * @since 2019.10
      */
-    public function has(string $domain, ?string $type = null, ?string $refId = null): Iface
+    public function has(string $domain, ?string $type = null, ?string $ref_id = null): Iface
     {
         $params = [$domain];
         !$type ?: $params[] = $type;
-        !$refId ?: $params[] = $refId;
-
+        !$ref_id ?: $params[] = $ref_id;
         $func = $this->filter->make('cms:has', $params);
         $this->conditions[] = $this->filter->compare('!=', $func, null);
         return $this;
     }
-
     /**
      * Parses the given array and adds the conditions to the list of conditions
      *
@@ -238,10 +222,8 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
         if (($cond = $this->filter->parse($conditions)) !== null) {
             $this->conditions[] = $cond;
         }
-
         return $this;
     }
-
     /**
      * Returns the category for the given category URL name
      *
@@ -249,18 +231,15 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      * @return \Aimeos\MShop\Cms\Item\Iface Cms item including the referenced domains items
      * @since 2023.10
      */
-    public function resolve(string $name): \Aimeos\MShop\Cms\Item\Iface
+    public function resolve(string $name): \Aimeos\M_Shop\Cms\Item\Iface
     {
         $search = $this->manager->filter(null)->add('cms.url', '==', '/' . trim($name, '/'))->slice(0, 1);
-
         if (($item = $this->manager->search($search, $this->domains)->first()) === null) {
             $msg = $this->context()->translate('controller/frontend', 'Unable to find CMS page "%1$s"');
             throw new \Aimeos\Controller\Frontend\Cms\Exception(sprintf($msg, $name), 404);
         }
-
         return $item;
     }
-
     /**
      * Returns the cmss filtered by the previously assigned conditions
      *
@@ -270,10 +249,9 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
      */
     public function search(?int &$total = null): \Aimeos\Map
     {
-        $this->filter->setConditions($this->filter->and($this->conditions));
+        $this->filter->set_conditions($this->filter->and($this->conditions));
         return $this->manager->search($this->filter, $this->domains, $total);
     }
-
     /**
      * Sets the start value and the number of returned cms items for slicing the list of found cms items
      *
@@ -287,7 +265,6 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
         $this->filter->slice($start, $limit);
         return $this;
     }
-
     /**
      * Sets the sorting of the result list
      *
@@ -298,17 +275,14 @@ class Standard extends \Aimeos\Controller\Frontend\Base implements Iface, \Aimeo
     public function sort(?string $key = null): Iface
     {
         $sort = [];
-        $list = ($key ? explode(',', $key) : []);
-
+        $list = $key ? explode(',', $key) : [];
         foreach ($list as $sortkey) {
-            $direction = ($sortkey[0] === '-' ? '-' : '+');
+            $direction = $sortkey[0] === '-' ? '-' : '+';
             $sort[] = $this->filter->sort($direction, ltrim($sortkey, '+-'));
         }
-
-        $this->filter->setSortations($sort);
+        $this->filter->set_sortations($sort);
         return $this;
     }
-
     /**
      * Sets the referenced domains that will be fetched too when retrieving items
      *

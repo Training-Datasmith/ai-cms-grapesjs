@@ -1,25 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package Admin
  * @subpackage JQAdm
  */
+namespace Aimeos\Admin\Jq_Adm\Cms\Media\Property;
 
-namespace Aimeos\Admin\JQAdm\Cms\Media\Property;
-
-sprintf('property'); // for translation
-
+sprintf('property');
+// for translation
 /**
  * Default implementation of cms media JQAdm client.
  *
  * @package Admin
  * @subpackage JQAdm
  */
-class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements \Aimeos\Admin\JQAdm\Common\Admin\Factory\Iface
+class Standard extends \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Base implements \Aimeos\Admin\Jq_Adm\Common\Admin\Factory\Iface
 {
     /** admin/jqadm/cms/media/property/name
      * Name of the property subpart used by the JQAdm cms media implementation
@@ -31,7 +29,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @since 2021.04
      * @category Developer
      */
-
     /**
      * Adds the required data used in the template
      *
@@ -40,17 +37,13 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      */
     public function data(\Aimeos\Base\View\Iface $view): \Aimeos\Base\View\Iface
     {
-        $manager = \Aimeos\MShop::create($this->context(), 'media/property/type');
-
+        $manager = \Aimeos\M_Shop::create($this->context(), 'media/property/type');
         $search = $manager->filter(true)->slice(0, 10000);
-        $search->setConditions($search->compare('==', 'media.property.type.domain', 'media'));
-        $search->setSortations([$search->sort('+', 'media.property.type.position')]);
-
-        $view->propertyTypes = $manager->search($search);
-
+        $search->set_conditions($search->compare('==', 'media.property.type.domain', 'media'));
+        $search->set_sortations([$search->sort('+', 'media.property.type.position')]);
+        $view->property_types = $manager->search($search);
         return $view;
     }
-
     /**
      * Copies a resource
      *
@@ -59,12 +52,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function copy(): ?string
     {
         $view = $this->object()->data($this->view());
-        $view->mediaData = $this->toArray($view->item, $view->get('mediaData', []), true);
-        $view->propertyBody = parent::copy();
-
+        $view->media_data = $this->to_array($view->item, $view->get('mediaData', []), true);
+        $view->property_body = parent::copy();
         return $this->render($view);
     }
-
     /**
      * Creates a new resource
      *
@@ -73,21 +64,17 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function create(): ?string
     {
         $view = $this->object()->data($this->view());
-        $siteid = $this->context()->locale()->getSiteId();
+        $siteid = $this->context()->locale()->get_site_id();
         $data = $view->get('mediaData', []);
-
         foreach ($data as $index => $entry) {
             foreach ($view->value($entry, 'property', []) as $idx => $y) {
                 $data[$index]['property'][$idx]['media.property.siteid'] = $siteid;
             }
         }
-
-        $view->propertyData = $data;
-        $view->propertyBody = parent::create();
-
+        $view->property_data = $data;
+        $view->property_body = parent::create();
         return $this->render($view);
     }
-
     /**
      * Returns a single resource
      *
@@ -96,12 +83,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function get(): ?string
     {
         $view = $this->object()->data($this->view());
-        $view->mediaData = $this->toArray($view->item, $view->get('mediaData', []));
-        $view->propertyBody = parent::get();
-
+        $view->media_data = $this->to_array($view->item, $view->get('mediaData', []));
+        $view->property_body = parent::get();
         return $this->render($view);
     }
-
     /**
      * Saves the data
      *
@@ -110,13 +95,10 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
     public function save(): ?string
     {
         $view = $this->view();
-
-        $view->item = $this->fromArray($view->item, $view->param('media', []));
-        $view->propertyBody = parent::save();
-
+        $view->item = $this->from_array($view->item, $view->param('media', []));
+        $view->property_body = parent::save();
         return null;
     }
-
     /**
      * Returns the sub-client given by its name.
      *
@@ -124,7 +106,7 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param string|null $name Name of the sub-client (Default if null)
      * @return \Aimeos\Admin\JQAdm\Iface Sub-client object
      */
-    public function getSubClient(string $type, ?string $name = null): \Aimeos\Admin\JQAdm\Iface
+    public function get_sub_client(string $type, ?string $name = null): \Aimeos\Admin\Jq_Adm\Iface
     {
         /** admin/jqadm/cms/media/property/decorators/excludes
          * Excludes decorators added by the "common" option from the cms JQAdm client
@@ -151,7 +133,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/media/property/decorators/global
          * @see admin/jqadm/cms/media/property/decorators/local
          */
-
         /** admin/jqadm/cms/media/property/decorators/global
          * Adds a list of globally available decorators only to the cms JQAdm client
          *
@@ -175,7 +156,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/media/property/decorators/excludes
          * @see admin/jqadm/cms/media/property/decorators/local
          */
-
         /** admin/jqadm/cms/media/property/decorators/local
          * Adds a list of local decorators only to the cms JQAdm client
          *
@@ -199,15 +179,14 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          * @see admin/jqadm/cms/media/property/decorators/excludes
          * @see admin/jqadm/cms/media/property/decorators/global
          */
-        return $this->createSubClient('cms/media/property/' . $type, $name);
+        return $this->create_sub_client('cms/media/property/' . $type, $name);
     }
-
     /**
      * Returns the list of sub-client names configured for the client.
      *
      * @return array List of JQAdm client names
      */
-    protected function getSubClientNames(): array
+    protected function get_sub_client_names(): array
     {
         /** admin/jqadm/cms/media/property/subparts
          * List of JQAdm sub-clients rendered within the cms media property section
@@ -244,7 +223,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         return $this->context()->config()->get('admin/jqadm/cms/media/property/subparts', []);
     }
-
     /**
      * Creates new and updates existing items using the data array
      *
@@ -252,39 +230,32 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param array $data Data array
      * @return \Aimeos\MShop\Cms\Item\Iface Modified cms item
      */
-    protected function fromArray(\Aimeos\MShop\Cms\Item\Iface $item, array $data): \Aimeos\MShop\Cms\Item\Iface
+    protected function from_array(\Aimeos\M_Shop\Cms\Item\Iface $item, array $data): \Aimeos\M_Shop\Cms\Item\Iface
     {
-        $manager = \Aimeos\MShop::create($this->context(), 'media');
+        $manager = \Aimeos\M_Shop::create($this->context(), 'media');
         $index = 0;
-
-        foreach ($item->getRefItems('media', null, null, false) as $refItem) {
-            $propItems = $refItem->getPropertyItems(null, false);
-
+        foreach ($item->get_ref_items('media', null, null, false) as $ref_item) {
+            $prop_items = $ref_item->get_property_items(null, false);
             foreach ((array) $this->val($data, $index . '/property', []) as $entry) {
-                if (isset($propItems[$entry['media.property.id']])) {
-                    $propItem = $propItems[$entry['media.property.id']];
-                    unset($propItems[$entry['media.property.id']]);
+                if (isset($prop_items[$entry['media.property.id']])) {
+                    $prop_item = $prop_items[$entry['media.property.id']];
+                    unset($prop_items[$entry['media.property.id']]);
                 } else {
-                    $propItem = $manager->createPropertyItem();
+                    $prop_item = $manager->create_property_item();
                 }
-
-                $propItem->fromArray($entry, true);
-                $refItem->addPropertyItem($propItem);
+                $prop_item->from_array($entry, true);
+                $ref_item->add_property_item($prop_item);
             }
-
-            foreach ($propItems as $propItem) {
+            foreach ($prop_items as $prop_item) {
                 // Don't delete preview image URLs
-                if (!ctype_digit($propItem->getType())) {
-                    $refItem->deletePropertyItem($propItem);
+                if (!ctype_digit($prop_item->get_type())) {
+                    $ref_item->delete_property_item($prop_item);
                 }
             }
-
             $index++;
         }
-
         return $item;
     }
-
     /**
      * Constructs the data array for the view from the given item
      *
@@ -293,31 +264,24 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
      * @param bool $copy True if items should be copied, false if not
      * @return string[] Multi-dimensional associative list of item data
      */
-    protected function toArray(\Aimeos\MShop\Cms\Item\Iface $item, array $data, bool $copy = false): array
+    protected function to_array(\Aimeos\M_Shop\Cms\Item\Iface $item, array $data, bool $copy = false): array
     {
         $idx = 0;
-        $siteId = $this->context()->locale()->getSiteId();
-
-        foreach ($item->getRefItems('media', null, null, false) as $mediaItem) {
+        $site_id = $this->context()->locale()->get_site_id();
+        foreach ($item->get_ref_items('media', null, null, false) as $media_item) {
             $data[$idx]['property'] = [];
-
-            foreach ($mediaItem->getPropertyItems(null, false) as $propItem) {
-                $list = $propItem->toArray(true);
-
+            foreach ($media_item->get_property_items(null, false) as $prop_item) {
+                $list = $prop_item->to_array(true);
                 if ($copy === true) {
-                    $list['media.property.siteid'] = $siteId;
+                    $list['media.property.siteid'] = $site_id;
                     $list['media.property.id'] = '';
                 }
-
                 $data[$idx]['property'][] = $list;
             }
-
             $idx++;
         }
-
         return $data;
     }
-
     /**
      * Returns the rendered template including the view data
      *
@@ -347,7 +311,6 @@ class Standard extends \Aimeos\Admin\JQAdm\Common\Admin\Factory\Base implements 
          */
         $tplconf = 'admin/jqadm/cms/media/property/template-item';
         $default = 'cms/item-media-property';
-
         return $view->render($view->config($tplconf, $default));
     }
 }

@@ -4,9 +4,7 @@
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  */
-
 $enc = $this->encoder();
-
 /** client/html/cms/page/metatags
  * Adds the title, meta and link tags to the HTML header
  *
@@ -23,51 +21,98 @@ $enc = $this->encoder();
  * @category User
  * @see client/html/cms/lists/metatags
  */
-
-if (($path = $this->pageCmsItem->getUrl()) !== '/') {
-    $url = $this->link('client/html/cms/page/url', ['path' => trim($this->pageCmsItem->getUrl(), '/')], ['absoluteUri' => true]);
+if (($path = $this->page_cms_item->get_url()) !== '/') {
+    $url = $this->link('client/html/cms/page/url', ['path' => trim($this->page_cms_item->get_url(), '/')], ['absoluteUri' => true]);
 } else {
-    $url = (string) $this->request()->getUri();
+    $url = (string) $this->request()->get_uri();
 }
+if (isset($this->page_cms_item)) {
+    ?>
 
-?>
-<?php if (isset($this->pageCmsItem)) : ?>
+	<?php 
+    if ((bool) $this->config('client/html/cms/page/metatags', true) === true) {
+        ?>
 
-	<?php if ((bool) $this->config('client/html/cms/page/metatags', true) === true) : ?>
+		<title><?php 
+        echo $enc->html(strip_tags($this->page_cms_item->get_name()));
+        ?> | <?php 
+        echo $enc->html($this->get('contextSiteLabel', 'Aimeos'));
+        ?></title>
 
-		<title><?= $enc->html(strip_tags($this->pageCmsItem->getName())) ?> | <?= $enc->html($this->get('contextSiteLabel', 'Aimeos')) ?></title>
-
-		<link rel="canonical" href="<?= $enc->attr($url) ?>">
+		<link rel="canonical" href="<?php 
+        echo $enc->attr($url);
+        ?>">
 
 		<meta property="og:type" content="article">
-		<meta property="og:title" content="<?= $enc->attr($this->pageCmsItem->getName()); ?>">
-		<meta property="og:url" content="<?= $enc->attr($url) ?>">
+		<meta property="og:title" content="<?php 
+        echo $enc->attr($this->page_cms_item->get_name());
+        ?>">
+		<meta property="og:url" content="<?php 
+        echo $enc->attr($url);
+        ?>">
 
-		<?php foreach ($this->pageCmsItem->getRefItems('media', 'default', 'default') as $mediaItem) : ?>
-			<meta property="og:image" content="<?= $enc->attr($this->content($mediaItem->getUrl())) ?>">
-		<?php endforeach ?>
+		<?php 
+        foreach ($this->page_cms_item->get_ref_items('media', 'default', 'default') as $media_item) {
+            ?>
+			<meta property="og:image" content="<?php 
+            echo $enc->attr($this->content($media_item->get_url()));
+            ?>">
+		<?php 
+        }
+        ?>
 
-		<?php foreach ($this->pageCmsItem->getRefItems('text', 'meta-description', 'default') as $textItem) : ?>
-			<meta property="og:description" content="<?= $enc->attr($textItem->getContent()) ?>">
-			<meta name="description" content="<?= $enc->attr(strip_tags($textItem->getContent())); ?>">
-		<?php endforeach ?>
+		<?php 
+        foreach ($this->page_cms_item->get_ref_items('text', 'meta-description', 'default') as $text_item) {
+            ?>
+			<meta property="og:description" content="<?php 
+            echo $enc->attr($text_item->get_content());
+            ?>">
+			<meta name="description" content="<?php 
+            echo $enc->attr(strip_tags($text_item->get_content()));
+            ?>">
+		<?php 
+        }
+        ?>
 
-		<?php foreach ($this->pageCmsItem->getRefItems('text', 'meta-keyword', 'default') as $textItem) : ?>
-			<meta name="keywords" content="<?= $enc->attr(strip_tags($textItem->getContent())); ?>">
-		<?php endforeach; ?>
+		<?php 
+        foreach ($this->page_cms_item->get_ref_items('text', 'meta-keyword', 'default') as $text_item) {
+            ?>
+			<meta name="keywords" content="<?php 
+            echo $enc->attr(strip_tags($text_item->get_content()));
+            ?>">
+		<?php 
+        }
+        ?>
 
 		<meta name="twitter:card" content="summary_large_image">
 
-	<?php endif; ?>
+	<?php 
+    }
+    ?>
 
-<?php endif; ?>
+<?php 
+}
+?>
 
-<link rel="stylesheet" href="<?= $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/slider.css', 'fs-theme', true)) ?>">
-<link rel="stylesheet" href="<?= $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/catalog-lists.css', 'fs-theme', true)) ?>">
-<link rel="stylesheet" href="<?= $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/cms-page.css', 'fs-theme', true)) ?>">
+<link rel="stylesheet" href="<?php 
+echo $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/slider.css', 'fs-theme', true));
+?>">
+<link rel="stylesheet" href="<?php 
+echo $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/catalog-lists.css', 'fs-theme', true));
+?>">
+<link rel="stylesheet" href="<?php 
+echo $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/cms-page.css', 'fs-theme', true));
+?>">
 
-<script defer src="<?= $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/slider.js', 'fs-theme', true)) ?>"></script>
-<script defer src="<?= $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/catalog-lists.js', 'fs-theme', true)) ?>"></script>
-<script defer src="<?= $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/cms-page.js', 'fs-theme', true)) ?>"></script>
+<script defer src="<?php 
+echo $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/slider.js', 'fs-theme', true));
+?>"></script>
+<script defer src="<?php 
+echo $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/catalog-lists.js', 'fs-theme', true));
+?>"></script>
+<script defer src="<?php 
+echo $enc->attr($this->content($this->get('contextSiteTheme', 'default') . '/cms-page.js', 'fs-theme', true));
+?>"></script>
 
-<?= $this->get('pageHeader'); ?>
+<?php 
+echo $this->get('pageHeader');

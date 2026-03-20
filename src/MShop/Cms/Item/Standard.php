@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, https://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2021-2026
  * @package MShop
  * @subpackage Cms
  */
-
-namespace Aimeos\MShop\Cms\Item;
+namespace Aimeos\M_Shop\Cms\Item;
 
 /**
  * Default cms manager implementation.
@@ -17,10 +15,9 @@ namespace Aimeos\MShop\Cms\Item;
  * @package MShop
  * @subpackage Cms
  */
-class Standard extends \Aimeos\MShop\Common\Item\Base implements \Aimeos\MShop\Cms\Item\Iface
+class Standard extends \Aimeos\M_Shop\Common\Item\Base implements \Aimeos\M_Shop\Cms\Item\Iface
 {
-    use \Aimeos\MShop\Common\Item\ListsRef\Traits;
-
+    use \Aimeos\M_Shop\Common\Item\Lists_Ref\Traits;
     /**
      * Initializes the cms item object with the given values.
      *
@@ -29,85 +26,75 @@ class Standard extends \Aimeos\MShop\Common\Item\Base implements \Aimeos\MShop\C
     public function __construct(string $prefix, array $values = [])
     {
         parent::__construct($prefix, $values);
-
-        $this->initListItems($values['.listitems'] ?? []);
+        $this->init_list_items($values['.listitems'] ?? []);
     }
-
     /**
      * Returns the URL of the cms item.
      *
      * @return string URL of the cms item
      */
-    public function getUrl(): string
+    public function get_url(): string
     {
         return $this->get('cms.url', '');
     }
-
     /**
      * Sets the URL of the cms item.
      *
      * @param string $value URL of the cms item
      * @return \Aimeos\MShop\Cms\Item\Iface Cms item for chaining method calls
      */
-    public function setUrl(string $value): \Aimeos\MShop\Cms\Item\Iface
+    public function set_url(string $value): \Aimeos\M_Shop\Cms\Item\Iface
     {
-        $url = \Aimeos\Map::explode('/', trim($value, '/'))->map(fn ($segment) => \Aimeos\Base\Str::slug($segment))->join('/');
-
+        $url = \Aimeos\Map::explode('/', trim($value, '/'))->map(fn($segment) => \Aimeos\Base\Str::slug($segment))->join('/');
         return $this->set('cms.url', '/' . $url);
     }
-
     /**
      * Returns the name of the attribute item.
      *
      * @return string Label of the attribute item
      */
-    public function getLabel(): string
+    public function get_label(): string
     {
         return $this->get('cms.label', '');
     }
-
     /**
      * Sets the new label of the attribute item.
      *
      * @param string $label Type label of the attribute item
      * @return \Aimeos\MShop\Cms\Item\Iface Cms item for chaining method calls
      */
-    public function setLabel(?string $label): \Aimeos\MShop\Cms\Item\Iface
+    public function set_label(?string $label): \Aimeos\M_Shop\Cms\Item\Iface
     {
         return $this->set('cms.label', (string) $label);
     }
-
     /**
      * Returns the status of the cms item.
      *
      * @return int Status of the cms item
      */
-    public function getStatus(): int
+    public function get_status(): int
     {
         return $this->get('cms.status', 1);
     }
-
     /**
      * Sets the status of the cms item.
      *
      * @param int $status true/false for enabled/disabled
      * @return \Aimeos\MShop\Cms\Item\Iface Cms item for chaining method calls
      */
-    public function setStatus(int $status): \Aimeos\MShop\Common\Item\Iface
+    public function set_status(int $status): \Aimeos\M_Shop\Common\Item\Iface
     {
         return $this->set('cms.status', $status);
     }
-
     /**
      * Tests if the item is available based on status, time, language and currency
      *
      * @return bool True if available, false if not
      */
-    public function isAvailable(): bool
+    public function is_available(): bool
     {
-        return parent::isAvailable() && $this->getStatus() > 0;
+        return parent::is_available() && $this->get_status() > 0;
     }
-
     /**
      * Sets the item values from the given array and removes that entries from the list
      *
@@ -115,41 +102,40 @@ class Standard extends \Aimeos\MShop\Common\Item\Base implements \Aimeos\MShop\C
      * @param bool True to set private properties too, false for public only
      * @return \Aimeos\MShop\Cms\Item\Iface Cms item for chaining method calls
      */
-    public function fromArray(array &$list, bool $private = false): \Aimeos\MShop\Common\Item\Iface
+    public function from_array(array &$list, bool $private = false): \Aimeos\M_Shop\Common\Item\Iface
     {
-        $item = parent::fromArray($list, $private);
-
+        $item = parent::from_array($list, $private);
         foreach ($list as $key => $value) {
             switch ($key) {
-                case 'cms.url': $item = $item->setUrl($value);
+                case 'cms.url':
+                    $item = $item->set_url($value);
                     break;
-                case 'cms.label': $item = $item->setLabel($value);
+                case 'cms.label':
+                    $item = $item->set_label($value);
                     break;
-                case 'cms.status': $item = $item->setStatus((int) $value);
+                case 'cms.status':
+                    $item = $item->set_status((int) $value);
                     break;
-                default: continue 2;
+                default:
+                    continue 2;
             }
-
             unset($list[$key]);
         }
-
         return $item;
     }
-
     /**
      * Returns the item values as array.
      *
      * @param bool True to return private properties, false for public only
      * @return array Associative list of item properties and their values
      */
-    public function toArray(bool $private = false): array
+    public function to_array(bool $private = false): array
     {
-        $list = parent::toArray(true); // include siteid, mtime, ctime, editor (private properties)
-
-        $list['cms.url'] = $this->getUrl();
-        $list['cms.label'] = $this->getLabel();
-        $list['cms.status'] = $this->getStatus();
-
+        $list = parent::to_array(true);
+        // include siteid, mtime, ctime, editor (private properties)
+        $list['cms.url'] = $this->get_url();
+        $list['cms.label'] = $this->get_label();
+        $list['cms.status'] = $this->get_status();
         return $list;
     }
 }
